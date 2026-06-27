@@ -1,0 +1,10 @@
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "SentraEDR — Console",
+  description: "Live endpoint detection & response console.",
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return <div className="dark min-h-screen bg-zinc-950 text-zinc-100">{children}</div>
+}
