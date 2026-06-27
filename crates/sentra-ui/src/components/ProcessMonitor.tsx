@@ -1,5 +1,3 @@
-import React from "react";
-
 export function ProcessMonitor({ processes }: { processes: any[] }) {
   // Use real data if available, otherwise fallback to empty state
   const displayProcesses = processes && processes.length > 0 

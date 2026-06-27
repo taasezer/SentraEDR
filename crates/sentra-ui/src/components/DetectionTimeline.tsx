@@ -1,5 +1,3 @@
-import React from "react";
-
 export function DetectionTimeline() {
   const mockDetections = [
     { id: 1, time: "10:45:22", type: "Process Injection", desc: "Suspicious remote thread created in explorer.exe", severity: "Critical" },

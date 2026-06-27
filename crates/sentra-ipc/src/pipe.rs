@@ -38,9 +38,11 @@ impl IpcServer {
     }
 }
 
+use tokio::io::AsyncBufReadExt;
+
 #[cfg(windows)]
 pub struct IpcClient {
-    client: NamedPipeClient,
+    client: tokio::io::BufReader<NamedPipeClient>,
 }
 
 #[cfg(windows)]
@@ -50,19 +52,17 @@ impl IpcClient {
             .open(PIPE_NAME)
             .map_err(|e| SentraError::Channel(format!("Failed to connect to IPC pipe: {}", e)))?;
             
-        Ok(Self { client })
+        Ok(Self { client: tokio::io::BufReader::new(client) })
     }
 
     pub async fn receive_message(&mut self) -> Result<IpcMessage> {
-        let mut buffer = [0u8; 8192];
-        let n = self.client.read(&mut buffer).await.map_err(|e| SentraError::Channel(e.to_string()))?;
+        let mut line = String::new();
+        let n = self.client.read_line(&mut line).await.map_err(|e| SentraError::Channel(e.to_string()))?;
         if n == 0 {
             return Err(SentraError::Channel("IPC pipe closed".to_string()));
         }
         
-        let payload = String::from_utf8_lossy(&buffer[..n]);
-        // Handle newline delimiter
-        let json_str = payload.trim();
+        let json_str = line.trim();
         
         let msg: IpcMessage = serde_json::from_str(json_str)
             .map_err(|e| SentraError::SerializationError(e.to_string()))?;

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { ProcessMonitor } from "./components/ProcessMonitor";
 import { DetectionTimeline } from "./components/DetectionTimeline";
@@ -7,7 +6,6 @@ import "./App.css";
 
 function App() {
   const [health, setHealth] = useState<any>(null);
-  const [events, setEvents] = useState<any[]>([]);
   const [processes, setProcesses] = useState<any[]>([]);
 
   useEffect(() => {
