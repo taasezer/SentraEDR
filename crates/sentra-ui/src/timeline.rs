@@ -4,6 +4,7 @@ use shared_models::Timestamp;
 pub enum TimelineKind {
     AlertObserved,
     ActionQueued,
+    TelemetryUpdated,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

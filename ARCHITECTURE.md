@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 17
+Phase: 18
 
 ## Purpose
 
@@ -103,6 +103,7 @@ The flow is intentionally one-directional for security decisions. Detection may 
 
 - Owns dashboard state, alert review, timeline display, and explicit user action flows.
 - Phase 9 implements dashboard state preparation, alert cards, risk summaries, timeline entries, and pending action review cards.
+- Phase 18 adds live telemetry projection state for agent health, aggregate counters, IPC health, and telemetry update timeline entries.
 - Does not render a live web UI, connect IPC, approve remediation, execute actions, or import agent and engine crates.
 - Must not import engine internals.
 
@@ -247,3 +248,7 @@ Workspace quality gates are now defined as non-destructive metadata in `testing-
 ## Phase 17 Status
 
 `sentra-agent` now owns a transport-free IPC service skeleton. `IpcConfig` controls whether the service processes input and bounds dispatcher capacity. `IpcService` wraps the `shared-ipc` pipeline, accepts raw byte chunks, exposes aggregate pipeline stats, and allows controlled dispatcher inspection for dry-run validation. The observe-only agent startup path now runs a synthetic IPC dry run and logs IPC counters alongside telemetry, analysis, detection, and remediation dry-run metrics. Live named-pipe transport, Windows ACLs, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, and release signing remain deferred.
+
+## Phase 18 Status
+
+`sentra-ui` now projects live/demo telemetry snapshots into dashboard state. The UI projection includes agent status, highest priority, aggregate telemetry counts, behavioral signal totals, detection alert counts, IPC enabled state, IPC capacity, accepted IPC frames, failed IPC frames, and last-updated timestamps. Dashboard state can apply a telemetry snapshot and add a sorted `TelemetryUpdated` timeline entry without changing alert summaries. This phase remains projection-only and does not add rendering, live IPC transport, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.

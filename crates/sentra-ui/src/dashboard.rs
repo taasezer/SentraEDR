@@ -1,5 +1,6 @@
 use crate::action_queue::ActionReviewCard;
 use crate::alert_card::AlertCard;
+use crate::live_telemetry::{LiveTelemetryPanel, LiveTelemetrySnapshot};
 use crate::timeline::{TimelineEntry, TimelineKind};
 use shared_models::{Alert, RiskLevel};
 use std::cmp::Reverse;
@@ -19,6 +20,7 @@ pub struct RiskSummary {
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct DashboardState {
     pub summary: RiskSummary,
+    pub telemetry: LiveTelemetryPanel,
     pub alerts: Vec<AlertCard>,
     pub timeline: Vec<TimelineEntry>,
     pub pending_actions: Vec<ActionReviewCard>,
@@ -32,6 +34,7 @@ impl DashboardState {
 
         let mut dashboard = Self {
             summary: summarize_alerts(&alert_cards),
+            telemetry: LiveTelemetryPanel::default(),
             timeline: alert_cards.iter().map(alert_timeline_entry).collect(),
             alerts: alert_cards,
             pending_actions: Vec::new(),
@@ -48,6 +51,20 @@ impl DashboardState {
         ));
         self.pending_actions.push(action);
         self.summary.pending_actions = self.pending_actions.len();
+        self.sort_timeline();
+    }
+
+    pub fn apply_live_telemetry(&mut self, snapshot: LiveTelemetrySnapshot) {
+        let panel = LiveTelemetryPanel::from_snapshot(snapshot);
+        self.timeline.push(TimelineEntry::new(
+            panel.last_updated.clone(),
+            TimelineKind::TelemetryUpdated,
+            format!(
+                "Telemetry update: {} normalized events",
+                panel.normalized_events
+            ),
+        ));
+        self.telemetry = panel;
         self.sort_timeline();
     }
 

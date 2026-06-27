@@ -1,6 +1,10 @@
-use sentra_ui::{ActionReviewCard, DashboardState, TimelineKind};
+use sentra_ui::{
+    ActionReviewCard, DashboardState, IpcTelemetryHealth, LiveTelemetryCounters,
+    LiveTelemetrySnapshot, TimelineKind,
+};
 use shared_models::{
-    Alert, Finding, RemediationAction, RemediationMode, RiskLevel, Signal, Timestamp,
+    Alert, EventPriority, Finding, HealthStatus, RemediationAction, RemediationMode, RiskLevel,
+    Signal, Timestamp,
 };
 
 #[test]
@@ -66,6 +70,36 @@ fn pending_action_cards_are_added_to_dashboard() {
     );
 }
 
+#[test]
+fn live_telemetry_updates_dashboard_panel_without_changing_alert_summary() {
+    let mut dashboard = DashboardState::from_alerts(vec![alert(RiskLevel::High, 80, true)]);
+
+    dashboard.apply_live_telemetry(live_snapshot("2026-06-28T10:00:00Z"));
+
+    assert_eq!(dashboard.summary.total_alerts, 1);
+    assert_eq!(dashboard.summary.high, 1);
+    assert_eq!(dashboard.telemetry.total_received, 12);
+    assert_eq!(dashboard.telemetry.normalized_events, 10);
+    assert_eq!(dashboard.telemetry.behavioral_signals, 10);
+    assert_eq!(dashboard.telemetry.ipc_frames_accepted, 8);
+}
+
+#[test]
+fn live_telemetry_update_is_added_to_sorted_timeline() {
+    let mut dashboard =
+        DashboardState::from_alerts(vec![alert_at(RiskLevel::High, 80, "2026-06-28T10:01:00Z")]);
+
+    dashboard.apply_live_telemetry(live_snapshot("2026-06-28T10:00:00Z"));
+
+    assert_eq!(dashboard.timeline.len(), 2);
+    assert_eq!(dashboard.timeline[0].kind, TimelineKind::TelemetryUpdated);
+    assert_eq!(dashboard.timeline[1].kind, TimelineKind::AlertObserved);
+    assert_eq!(
+        dashboard.timeline[0].timestamp.to_rfc3339(),
+        "2026-06-28T10:00:00+00:00"
+    );
+}
+
 fn alert(risk_level: RiskLevel, score: u8, remediation_eligible: bool) -> Alert {
     alert_at_eligible(
         risk_level,
@@ -103,4 +137,28 @@ fn alert_at_eligible(
 
 fn ts(value: &str) -> Timestamp {
     Timestamp::parse_rfc3339(value).unwrap()
+}
+
+fn live_snapshot(observed_at: &str) -> LiveTelemetrySnapshot {
+    LiveTelemetrySnapshot {
+        observed_at: ts(observed_at),
+        agent_status: HealthStatus::Healthy,
+        highest_priority: EventPriority::High,
+        counters: LiveTelemetryCounters {
+            received: 12,
+            normalized: 10,
+            dropped: 2,
+            process_signals: 3,
+            persistence_signals: 2,
+            network_signals: 4,
+            memory_signals: 1,
+            detection_alerts: 1,
+        },
+        ipc: IpcTelemetryHealth {
+            enabled: true,
+            dispatcher_capacity: 256,
+            frames_accepted: 8,
+            failed_frames: 1,
+        },
+    }
 }

@@ -615,3 +615,38 @@ Performance notes:
 
 - IPC route queues remain bounded through `shared-ipc`.
 - The agent logs aggregate IPC dry-run counters instead of streaming raw high-volume telemetry.
+
+## Phase 18: UI Live Telemetry Projection
+
+Status: Complete pending user review
+
+Completed:
+
+- Added `live_telemetry` projection types to `sentra-ui`.
+- Added `LiveTelemetrySnapshot` for demo-ready agent health, telemetry counters, detection alert counts, and IPC health counters.
+- Added `LiveTelemetryPanel` as the UI-ready projection of the latest telemetry update.
+- Extended `DashboardState` with a telemetry panel.
+- Added `DashboardState::apply_live_telemetry` for applying a live snapshot to dashboard state.
+- Added `TimelineKind::TelemetryUpdated` so telemetry updates appear alongside alert and action timeline entries.
+- Kept `sentra-ui` isolated from `sentra-agent`, `shared-ipc`, and engine crates.
+
+Validation:
+
+- Live telemetry projection test covers snapshot-to-panel counter mapping.
+- Dashboard tests cover telemetry update application, summary stability, and sorted mixed timelines.
+- Final Phase 18 command results are recorded in `TEST_RESULTS/phase-18.md`.
+
+Architectural impact:
+
+- The UI crate can now represent live/demo telemetry state without owning collection, detection, IPC transport, or remediation logic.
+- Future transport layers can produce `LiveTelemetrySnapshot` values without changing dashboard projection behavior.
+
+Security notes:
+
+- Phase 18 introduces display data only.
+- No browser renderer, named-pipe client, socket, command channel, user approval execution, remediation execution, malware execution, VM orchestration, deployment, or signing was added.
+
+Performance notes:
+
+- UI projection stores aggregate counters and a current panel, not raw telemetry streams.
+- Timeline additions are deterministic and bounded by caller-provided update frequency.

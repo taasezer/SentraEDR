@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 17
+Phase: 18
 
 ## Performance Goals
 
@@ -103,6 +103,10 @@ Phase 17:
 
 - Agent-side IPC service integration must preserve bounded dispatcher queues and expose aggregate counters for demo telemetry without streaming raw high-volume events.
 
+Phase 18:
+
+- UI live telemetry projection must store aggregate panel state and timeline entries only, not raw telemetry streams.
+
 ## Phase 0 Status
 
 Performance is specified as design targets. Measurements begin when executable components exist.
@@ -170,3 +174,7 @@ IPC pipeline composition now integrates the stream assembler, frame intake, and 
 ## Phase 17 Status
 
 The agent IPC service skeleton now wraps the in-memory pipeline behind bounded configuration and records synthetic dry-run counters during observe-only startup. The integration does not add named-pipe transport, socket loops, persistent storage, background polling, unbounded channels, raw telemetry streaming, or benchmark claims.
+
+## Phase 18 Status
+
+The UI live telemetry projection stores a single latest panel and sorted timeline entries derived from aggregate snapshots. It does not add rendering loops, live IPC transport, persistent storage, background polling, unbounded channels, or raw event retention.
