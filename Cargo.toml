@@ -16,7 +16,7 @@ members = [
     "core/core-testkit",
     "core/core-rule-sdk",
     "service-host",
-    "ui/tauri-app",
+    "ui/tauri-app/src-tauri",
     "ui/ui-core",
     "ui/ui-models",
     "ui/ui-api-client",

@@ -15,44 +15,48 @@ unsafe fn extract_string_property(record: *mut EVENT_RECORD, property_name: &str
     desc.ArrayIndex = 0xFFFFFFFF; // ULONG_MAX for single-valued properties
 
     let mut buffer_size: u32 = 0;
-    
-    // In windows-rs 0.58.0, TdhGetPropertySize expects &[PROPERTY_DATA_DESCRIPTOR]
     let desc_slice = std::slice::from_ref(&desc);
     
-    let status = TdhGetPropertySize(
-        record,
-        None,
-        desc_slice,
-        &mut buffer_size,
-    );
-
-    // WIN32_ERROR(0) is ERROR_SUCCESS
-    if status != 0 || buffer_size == 0 {
-        return None;
-    }
+    let status = TdhGetPropertySize(record, None, desc_slice, &mut buffer_size);
+    if status != 0 || buffer_size == 0 { return None; }
 
     let mut buffer = vec![0u8; buffer_size as usize];
-    
-    let status = TdhGetProperty(
-        record,
-        None,
-        desc_slice,
-        &mut buffer,
-    );
+    let status = TdhGetProperty(record, None, desc_slice, &mut buffer);
+    if status != 0 { return None; }
 
-    if status != 0 {
-        return None;
-    }
-
-    // Convert raw UTF-16 bytes (excluding null terminator) to String
-    let u16_slice = std::slice::from_raw_parts(
-        buffer.as_ptr() as *const u16,
-        (buffer_size / 2) as usize,
-    );
-    
-    // Find null terminator if it exists
+    let u16_slice = std::slice::from_raw_parts(buffer.as_ptr() as *const u16, (buffer_size / 2) as usize);
     let len = u16_slice.iter().position(|&c| c == 0).unwrap_or(u16_slice.len());
     Some(String::from_utf16_lossy(&u16_slice[..len]))
+}
+
+unsafe fn extract_u32_property(record: *mut EVENT_RECORD, property_name: &str) -> Option<u32> {
+    let mut utf16_name = property_name.encode_utf16().chain(std::iter::once(0)).collect::<Vec<u16>>();
+    let mut desc = PROPERTY_DATA_DESCRIPTOR::default();
+    desc.PropertyName = utf16_name.as_mut_ptr() as u64;
+    desc.ArrayIndex = 0xFFFFFFFF;
+    
+    let mut value: u32 = 0;
+    let desc_slice = std::slice::from_ref(&desc);
+    
+    let mut buffer_size: u32 = std::mem::size_of::<u32>() as u32;
+    let status = TdhGetProperty(record, None, desc_slice, std::slice::from_raw_parts_mut(&mut value as *mut u32 as *mut u8, buffer_size as usize));
+    
+    if status == 0 { Some(value) } else { None }
+}
+
+unsafe fn extract_u16_property(record: *mut EVENT_RECORD, property_name: &str) -> Option<u16> {
+    let mut utf16_name = property_name.encode_utf16().chain(std::iter::once(0)).collect::<Vec<u16>>();
+    let mut desc = PROPERTY_DATA_DESCRIPTOR::default();
+    desc.PropertyName = utf16_name.as_mut_ptr() as u64;
+    desc.ArrayIndex = 0xFFFFFFFF;
+    
+    let mut value: u16 = 0;
+    let desc_slice = std::slice::from_ref(&desc);
+    
+    let mut buffer_size: u32 = std::mem::size_of::<u16>() as u32;
+    let status = TdhGetProperty(record, None, desc_slice, std::slice::from_raw_parts_mut(&mut value as *mut u16 as *mut u8, buffer_size as usize));
+    
+    if status == 0 { Some(value) } else { None }
 }
 
 /// Raw C-style callback for `ProcessTrace`.
@@ -74,17 +78,69 @@ pub extern "system" fn event_record_callback(record: *mut EVENT_RECORD) {
 
     let mut event_type = shared_models::events::EventType::Unknown;
 
-    if event_id == 1 { // Process Start
-        let image_name = unsafe { extract_string_property(record, "ImageName") }
-            .unwrap_or_else(|| "Unknown".to_string());
-        
-        let command_line = unsafe { extract_string_property(record, "CommandLine") }
-            .unwrap_or_else(|| "Unknown".to_string());
+    // KERNEL_PROCESS_GUID
+    if provider_id.data1 == 0x22fb2cd6 {
+        if event_id == 1 { // Process Start
+            let image_name = unsafe { extract_string_property(record, "ImageName") }
+                .unwrap_or_else(|| "Unknown".to_string());
+            let command_line = unsafe { extract_string_property(record, "CommandLine") }
+                .unwrap_or_else(|| "Unknown".to_string());
 
-        event_type = shared_models::events::EventType::ProcessCreate {
-            image_path: image_name,
-            command_line,
-        };
+            event_type = shared_models::events::EventType::ProcessCreate {
+                image_path: image_name,
+                command_line,
+            };
+        }
+    } 
+    // KERNEL_NETWORK_GUID
+    else if provider_id.data1 == 0x7dd42a49 {
+        if event_id == 10 || event_id == 11 { // TCP Send/Receive
+            let daddr = unsafe { extract_u32_property(record, "daddr") }.unwrap_or(0);
+            let dport = unsafe { extract_u16_property(record, "dport") }.unwrap_or(0);
+            
+            // Convert u32 to IP string (simple format for demo)
+            let ip = format!("{}.{}.{}.{}", (daddr & 0xFF), (daddr >> 8) & 0xFF, (daddr >> 16) & 0xFF, (daddr >> 24) & 0xFF);
+            
+            event_type = shared_models::events::EventType::NetworkConnection {
+                destination_ip: ip,
+                destination_port: dport.to_be(), // Ports are usually big-endian
+                protocol: "TCP".to_string(),
+            };
+        } else if event_id == 14 || event_id == 15 { // UDP Send/Receive
+            let daddr = unsafe { extract_u32_property(record, "daddr") }.unwrap_or(0);
+            let dport = unsafe { extract_u16_property(record, "dport") }.unwrap_or(0);
+            let ip = format!("{}.{}.{}.{}", (daddr & 0xFF), (daddr >> 8) & 0xFF, (daddr >> 16) & 0xFF, (daddr >> 24) & 0xFF);
+            
+            event_type = shared_models::events::EventType::NetworkConnection {
+                destination_ip: ip,
+                destination_port: dport.to_be(),
+                protocol: "UDP".to_string(),
+            };
+        }
+    }
+    // KERNEL_FILE_GUID
+    else if provider_id.data1 == 0xedd08927 {
+        if event_id == 64 || event_id == 14 || event_id == 15 { // Create/Write/Rename
+            let file_name = unsafe { extract_string_property(record, "FileName") }
+                .unwrap_or_else(|| "Unknown".to_string());
+            
+            let action = match event_id {
+                64 => "Create",
+                14 => "Write",
+                15 => "Rename",
+                _ => "Unknown"
+            };
+
+            event_type = shared_models::events::EventType::FileActivity {
+                file_path: file_name,
+                action: action.to_string(),
+            };
+        }
+    }
+
+    // Drop unknown events to save memory and CPU
+    if matches!(event_type, shared_models::events::EventType::Unknown) {
+        return;
     }
 
     // Dispatch the raw event immediately into the bounded channel.

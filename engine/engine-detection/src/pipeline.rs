@@ -42,11 +42,15 @@ impl CorrelationState {
     }
 }
 
+use std::collections::HashMap;
+
 /// The 6-Stage Detection Pipeline Orchestrator.
 pub struct DetectionPipeline {
     state: CorrelationState,
     rules: Vec<Box<dyn Rule>>,
     max_global_ttl_ms: u64,
+    /// Maps (Rule ID, Process ID) to the timestamp of the last fired alert to prevent flooding
+    alert_throttle: HashMap<(String, Option<u32>), u64>,
 }
 
 impl DetectionPipeline {
@@ -60,6 +64,7 @@ impl DetectionPipeline {
             state: CorrelationState::new(50_000), // Hard memory budget
             rules,
             max_global_ttl_ms: max_ttl,
+            alert_throttle: HashMap::new(),
         }
     }
 
@@ -79,8 +84,18 @@ impl DetectionPipeline {
         // 3. Rule Evaluation (which internally handles Risk and Confidence)
         for rule in &self.rules {
             if let Some(alert) = rule.evaluate(&self.state) {
-                // 4, 5, 6. Formatting the immutable alert based on the rule evaluation.
-                alerts.push(alert);
+                // Throttling Logic (60 second cooldown per rule+pid)
+                let throttle_key = (alert.rule_id.clone(), alert.related_process_id);
+                let should_alert = match self.alert_throttle.get(&throttle_key) {
+                    Some(&last_alert_time) => (current_time.saturating_sub(last_alert_time)) > 60_000,
+                    None => true,
+                };
+
+                if should_alert {
+                    self.alert_throttle.insert(throttle_key, current_time);
+                    // 4, 5, 6. Formatting the immutable alert based on the rule evaluation.
+                    alerts.push(alert);
+                }
             }
         }
 

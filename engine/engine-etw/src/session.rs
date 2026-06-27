@@ -14,12 +14,16 @@ use windows::Win32::System::Diagnostics::Etw::{
     EVENT_TRACE_CONTROL_STOP
 };
 
-// Microsoft-Windows-Kernel-Process GUID
 const KERNEL_PROCESS_GUID: GUID = GUID::from_values(
-    0x22fb2cd6,
-    0x0e7b,
-    0x422b,
-    [0xa0, 0xc7, 0x2f, 0xad, 0x1f, 0xd0, 0xe7, 0x16],
+    0x22fb2cd6, 0x0e7b, 0x422b, [0xa0, 0xc7, 0x2f, 0xad, 0x1f, 0xd0, 0xe7, 0x16]
+);
+
+const KERNEL_NETWORK_GUID: GUID = GUID::from_values(
+    0x7dd42a49, 0x5329, 0x4832, [0x8d, 0xfd, 0x43, 0xd9, 0x79, 0x15, 0x3a, 0x88]
+);
+
+const KERNEL_FILE_GUID: GUID = GUID::from_values(
+    0xedd08927, 0x9cc4, 0x4e65, [0xb9, 0x70, 0xc2, 0x56, 0x0f, 0xb5, 0xc2, 0x89]
 );
 
 pub struct EtwSession {
@@ -92,8 +96,8 @@ impl EtwSession {
                 return;
             }
 
-            // Enable Provider
-            let enable_status = unsafe {
+            // Enable Microsoft-Windows-Kernel-Process
+            let _ = unsafe {
                 EnableTraceEx2(
                     trace_handle,
                     &KERNEL_PROCESS_GUID,
@@ -103,9 +107,27 @@ impl EtwSession {
                 )
             };
 
-            if enable_status.is_err() {
-                eprintln!("Failed to enable provider: {:?}", enable_status);
-            }
+            // Enable Microsoft-Windows-Kernel-Network
+            let _ = unsafe {
+                EnableTraceEx2(
+                    trace_handle,
+                    &KERNEL_NETWORK_GUID,
+                    EVENT_CONTROL_CODE_ENABLE_PROVIDER.0 as u32,
+                    TRACE_LEVEL_INFORMATION as u8,
+                    0, 0, 0, None
+                )
+            };
+
+            // Enable Microsoft-Windows-Kernel-File
+            let _ = unsafe {
+                EnableTraceEx2(
+                    trace_handle,
+                    &KERNEL_FILE_GUID,
+                    EVENT_CONTROL_CODE_ENABLE_PROVIDER.0 as u32,
+                    TRACE_LEVEL_INFORMATION as u8,
+                    0, 0, 0, None
+                )
+            };
 
             // Open the trace for consumption
             let mut logfile = EVENT_TRACE_LOGFILEW::default();

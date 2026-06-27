@@ -46,5 +46,9 @@ pub enum EventType {
     PowerShellExecution {
         script_block: String,
     },
+    FileActivity {
+        file_path: String,
+        action: String,
+    },
     Unknown,
 }
