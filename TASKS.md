@@ -398,3 +398,40 @@ Performance notes:
 
 - Phase 11 adds validation orchestration only.
 - No production telemetry load, benchmark claim, persistent store, unbounded channel, or background scheduler was introduced.
+
+## Phase 12: IPC Envelope And Frame Codec
+
+Status: Complete pending user review
+
+Completed:
+
+- Added typed IPC message envelopes to `shared-ipc`.
+- Added IPC message IDs, message kinds, and payload variants.
+- Added telemetry summary, user decision, remediation status update, and audit record IPC structs.
+- Added schema major version validation.
+- Added message kind and payload consistency validation.
+- Added length-prefixed JSON frame encoding and decoding.
+- Added frame rejection for incomplete, oversized, malformed, and trailing-byte frames.
+- Added Phase 12 report and test results.
+
+Validation:
+
+- Message tests cover current schema version, correlation IDs, kind/payload mismatch rejection, and unsupported major schema rejection.
+- Frame tests cover alert round-trip, 4-byte big-endian length prefix, incomplete frame rejection, and oversized frame rejection.
+- Final Phase 12 command results are recorded in `TEST_RESULTS/phase-12.md`.
+
+Architectural impact:
+
+- `shared-ipc` now owns message framing and serialization boundaries.
+- `shared-ipc` still depends only on `shared-models` and workspace utility dependencies.
+- No engine, agent, or UI crate imports `shared-ipc` internals for detection or remediation behavior.
+
+Security notes:
+
+- No named-pipe server/client, Windows ACL, UI streaming, remediation execution, malware execution, Atomic Red Team execution, VM orchestration, deployment, or signing was added.
+- Decode validation rejects unsupported schema major versions and invalid kind/payload combinations before dispatch.
+
+Performance notes:
+
+- Frame payloads are capped at 1 MiB before deserialization.
+- Phase 12 introduces no unbounded channel, persistent store, background loop, or production telemetry load.

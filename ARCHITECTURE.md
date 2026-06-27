@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 11
+Phase: 12
 
 ## Purpose
 
@@ -91,6 +91,7 @@ The flow is intentionally one-directional for security decisions. Detection may 
 `shared-ipc`
 
 - Owns named-pipe framing, transport, serialization, bounded queues, backpressure, and schema negotiation.
+- Phase 12 implements in-memory IPC message envelopes and length-prefixed frame encoding/decoding.
 - Does not contain detection logic.
 
 `sentra-ui`
@@ -217,3 +218,7 @@ Workspace foundations are implemented. `shared-models`, `shared-ipc`, and `sentr
 ## Phase 11 Status
 
 Workspace quality gates are now defined as non-destructive metadata in `testing-infra`, exposed through a local PowerShell runner, and mirrored by a GitHub Actions workflow for the `Omer` branch and pull requests. The gates cover formatting, clippy, workspace tests, architecture validation, and the observe-only agent dry run. Phase 11 does not add deployment, signing, malware execution, VM orchestration, remediation execution, host mutation, or release automation.
+
+## Phase 12 Status
+
+`shared-ipc` now defines typed IPC message envelopes, message kinds, payload variants, and a length-prefixed JSON frame codec. Frames validate schema major version, message kind/payload consistency, incomplete data, and maximum payload size before dispatch. This phase does not implement named-pipe server/client transport, Windows ACLs, UI streaming, remediation execution, malware testing, VM orchestration, deployment, or release signing.

@@ -17,7 +17,7 @@
 - Modify later: `crates/shared-ipc/src/lib.rs`
 - Create later: `crates/shared-ipc/src/message.rs`
 
-- [ ] **Step 1: Write failing message tests**
+- [x] **Step 1: Write failing message tests**
 
 Create tests for:
 
@@ -26,7 +26,7 @@ Create tests for:
 - mismatched message kind and payload is rejected;
 - unsupported major schema version is rejected.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `cargo test -p shared-ipc --test message`
 
@@ -40,22 +40,22 @@ Expected: fail because `IpcEnvelope`, `IpcMessageKind`, `IpcPayload`, and `Messa
 - Modify: `crates/shared-ipc/src/lib.rs`
 - Create: `crates/shared-ipc/src/message.rs`
 
-- [ ] **Step 1: Add dependencies**
+- [x] **Step 1: Add dependencies**
 
 Add `serde`, `serde_json`, and `uuid` from workspace dependencies to `shared-ipc`.
 
-- [ ] **Step 2: Add error variants**
+- [x] **Step 2: Add error variants**
 
 Add:
 
 - `UnsupportedSchemaVersion { major: u16, minor: u16 }`
 - `MessageKindPayloadMismatch { kind: String, payload: String }`
 
-- [ ] **Step 3: Implement message model**
+- [x] **Step 3: Implement message model**
 
 Add `MessageId`, `IpcMessageKind`, `IpcPayload`, `TelemetrySummary`, `RemediationStatusUpdate`, `AuditRecord`, and `IpcEnvelope`.
 
-- [ ] **Step 4: Run GREEN**
+- [x] **Step 4: Run GREEN**
 
 Run: `cargo test -p shared-ipc --test message`
 
@@ -68,7 +68,7 @@ Expected: pass.
 - Modify later: `crates/shared-ipc/src/lib.rs`
 - Create later: `crates/shared-ipc/src/frame.rs`
 
-- [ ] **Step 1: Write failing frame tests**
+- [x] **Step 1: Write failing frame tests**
 
 Create tests for:
 
@@ -77,7 +77,7 @@ Create tests for:
 - incomplete frame rejection;
 - oversized frame rejection.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `cargo test -p shared-ipc --test frame`
 
@@ -90,7 +90,7 @@ Expected: fail because frame codec APIs are missing.
 - Modify: `crates/shared-ipc/src/lib.rs`
 - Create: `crates/shared-ipc/src/frame.rs`
 
-- [ ] **Step 1: Add frame errors**
+- [x] **Step 1: Add frame errors**
 
 Add:
 
@@ -98,11 +98,11 @@ Add:
 - `IncompleteFrame { expected: usize, actual: usize }`
 - `Serialization(String)`
 
-- [ ] **Step 2: Implement encode/decode**
+- [x] **Step 2: Implement encode/decode**
 
 Add `MAX_FRAME_PAYLOAD_BYTES`, `encode_frame`, and `decode_frame`.
 
-- [ ] **Step 3: Run GREEN**
+- [x] **Step 3: Run GREEN**
 
 Run: `cargo test -p shared-ipc --test frame`
 
@@ -118,11 +118,11 @@ Expected: pass.
 - Create: `PHASE_REPORTS/phase-12.md`
 - Create: `TEST_RESULTS/phase-12.md`
 
-- [ ] **Step 1: Record Phase 12 docs**
+- [x] **Step 1: Record Phase 12 docs**
 
 Document that Phase 12 adds in-memory IPC envelope and frame codec only.
 
-- [ ] **Step 2: Run final verification**
+- [x] **Step 2: Run final verification**
 
 Run:
 

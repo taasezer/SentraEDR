@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 11
+Phase: 12
 
 ## Performance Goals
 
@@ -79,6 +79,10 @@ Phase 11:
 
 - Quality gates must remain bounded to compile, lint, test, architecture validation, and observe-only dry-run checks.
 
+Phase 12:
+
+- IPC frames must enforce a maximum payload size before deserialization and must not allocate unbounded buffers.
+
 ## Phase 0 Status
 
 Performance is specified as design targets. Measurements begin when executable components exist.
@@ -122,3 +126,7 @@ Synthetic testing infrastructure validates scenario catalog construction, safety
 ## Phase 11 Status
 
 CI quality gates validate the workspace with deterministic build, lint, test, architecture, and observe-only dry-run commands. The implementation introduces a local command runner and GitHub Actions workflow, but no production telemetry load, benchmark claim, VM orchestration, deployment job, release signing, malware execution, remediation execution, persistent store, unbounded channel, or host mutation.
+
+## Phase 12 Status
+
+IPC frame validation now rejects payloads larger than 1 MiB before deserialization and rejects incomplete frames before parsing. The implementation performs in-memory serialization only; it introduces no named-pipe loop, socket, background scheduler, persistent store, unbounded channel, production telemetry stream, or benchmark claim.

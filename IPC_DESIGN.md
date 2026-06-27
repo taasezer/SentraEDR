@@ -1,7 +1,7 @@
 # SentraEDR IPC Design
 
 Date: 2026-06-27
-Phase: 0
+Phase: 12
 
 ## IPC Choice
 
@@ -71,3 +71,14 @@ Phase 1 should select a compact Rust-friendly serialization format. JSON may be 
 ## Phase 0 Status
 
 IPC is specified but not implemented. Phase 1 creates the initial crate boundary; functional IPC transport follows after shared schemas exist.
+
+## Phase 12 Status
+
+`shared-ipc` now provides the first functional IPC serialization boundary:
+
+- `IpcEnvelope` carries schema version, message ID, message kind, timestamp, optional correlation ID, and typed payload.
+- `IpcPayload` supports health, telemetry summary, alert, user decision, remediation request, remediation status, and audit record categories.
+- `encode_frame` and `decode_frame` use a 4-byte big-endian length prefix followed by JSON payload bytes.
+- Decode validation rejects unsupported major schema versions, mismatched message kind/payload pairs, incomplete frames, oversized frames, malformed JSON, and trailing bytes.
+
+Named-pipe transport, pipe ACLs, UI streaming, command authorization flow, and live remediation request handling remain deferred.
