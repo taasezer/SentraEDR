@@ -107,6 +107,18 @@ impl<T> BoundedReceiver<T> {
         value
     }
 
+    pub fn try_recv(&mut self) -> Option<T> {
+        match self.receiver.try_recv() {
+            Ok(value) => {
+                self.metrics.depth.fetch_sub(1, Ordering::Relaxed);
+                Some(value)
+            }
+            Err(mpsc::error::TryRecvError::Empty | mpsc::error::TryRecvError::Disconnected) => {
+                None
+            }
+        }
+    }
+
     pub fn snapshot(&self) -> QueueSnapshot {
         self.metrics.snapshot()
     }

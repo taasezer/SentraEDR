@@ -7,7 +7,7 @@ async fn queue_tracks_depth_after_send_and_receive() {
     sender.try_send("first").unwrap();
     assert_eq!(sender.snapshot().depth, 1);
 
-    let received = receiver.recv().await;
+    let received = receiver.try_recv();
     assert_eq!(received, Some("first"));
     assert_eq!(receiver.snapshot().depth, 0);
 }
