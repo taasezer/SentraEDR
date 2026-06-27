@@ -1,0 +1,2223 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentraEDR — Enterprise Endpoint Detection & Response</title>
+    
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Shadcn UI Slate/Zinc + Emerald Theme custom properties */
+        :root {
+            --background: #09090b;
+            --foreground: #fafafa;
+            --card: #09090b;
+            --card-foreground: #fafafa;
+            --popover: #09090b;
+            --popover-foreground: #fafafa;
+            --primary: #22c55e;
+            --primary-foreground: #09090b;
+            --secondary: #18181b;
+            --secondary-foreground: #fafafa;
+            --muted: #18181b;
+            --muted-foreground: #71717a;
+            --accent: #27272a;
+            --accent-foreground: #fafafa;
+            --destructive: #ef4444;
+            --destructive-foreground: #fafafa;
+            --border: #27272a;
+            --input: #27272a;
+            --ring: #22c55e;
+            --radius: 0.75rem;
+            
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Common Utility Classes */
+        .border-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--card);
+        }
+
+        .btn-shadcn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px; /* Rounded pill style like Homie */
+            font-size: 14px;
+            font-weight: 500;
+            height: 44px;
+            padding: 0 24px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid transparent;
+            text-decoration: none;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .btn-shadcn.primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-shadcn.primary:hover {
+            background-color: #16a34a;
+            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.2);
+        }
+
+        .btn-shadcn.outline {
+            background-color: transparent;
+            border-color: var(--border);
+            color: var(--foreground);
+        }
+
+        .btn-shadcn.outline:hover {
+            background-color: var(--secondary);
+            border-color: #3f3f46;
+        }
+
+        .btn-shadcn.ghost {
+            background-color: transparent;
+            color: var(--muted-foreground);
+        }
+
+        .btn-shadcn.ghost:hover {
+            background-color: var(--secondary);
+            color: var(--foreground);
+        }
+
+        .btn-shadcn.destructive {
+            background-color: var(--destructive);
+            color: var(--destructive-foreground);
+            border-radius: var(--radius);
+        }
+
+        .btn-shadcn.destructive:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-sm {
+            height: 34px;
+            font-size: 12px;
+            padding: 0 16px;
+        }
+
+        .badge-shadcn {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            padding: 2px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .badge-shadcn.outline {
+            border-color: var(--border);
+            color: var(--foreground);
+            background-color: var(--secondary);
+        }
+
+        .badge-shadcn.green {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            border-color: rgba(34, 197, 94, 0.2);
+        }
+
+        .badge-shadcn.red {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .badge-shadcn.yellow {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        /* ==================== LANDING PAGE VIEW ==================== */
+        #view-landing {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Floating Nav Bar */
+        header.landing-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 16px 24px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: rgba(9, 9, 11, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            padding: 8px 24px;
+            height: 56px;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo-square {
+            width: 24px;
+            height: 24px;
+            border: 1.5px solid var(--primary);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .landing-nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .landing-nav-link a {
+            color: var(--muted-foreground);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .landing-nav-link a:hover {
+            color: var(--foreground);
+        }
+
+        /* Video Hero Section scaling down on scroll */
+        .hero-section {
+            padding-top: 140px;
+            padding-bottom: 60px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .hero-video-container {
+            position: absolute;
+            inset: 0;
+            top: 0;
+            width: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero-video-wrapper {
+            width: 100%;
+            height: 100vh;
+            will-change-transform;
+            overflow: hidden;
+            transition: border-radius 0.1s linear;
+        }
+
+        .hero-video-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-cover: cover;
+            opacity: 0.45;
+        }
+
+        .hero-bg-text-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 5;
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .hero-bg-title {
+            display: block;
+            color: rgba(255, 255, 255, 0.03);
+            font-weight: 800;
+            text-align: center;
+            font-size: 18vw;
+            line-height: 0.9;
+            letter-spacing: -0.05em;
+            user-select: none;
+            font-family: var(--font-sans);
+        }
+
+        .hero-text-card {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .hero-badge {
+            background-color: rgba(24, 24, 27, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            padding: 6px 16px;
+            font-size: 13px;
+            color: var(--muted-foreground);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .hero-badge i {
+            color: var(--primary);
+            width: 14px;
+            height: 14px;
+        }
+
+        .hero-text-card h1 {
+            font-size: 5rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            color: white;
+            margin-bottom: 24px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-text-card p {
+            font-size: 18px;
+            color: var(--muted-foreground);
+            line-height: 1.6;
+            max-width: 650px;
+            margin: 0 auto 36px auto;
+        }
+
+        /* Mission Section */
+        .mission-section {
+            padding: 120px 24px 80px 24px;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .mission-bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .mission-bg-text {
+            font-weight: 800;
+            font-size: 14vw;
+            color: rgba(255, 255, 255, 0.015);
+            letter-spacing: -0.04em;
+            line-height: 1;
+        }
+
+        .mission-card-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .mission-inner-card {
+            border-radius: var(--radius);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            padding: 60px 48px;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 40px;
+            background-color: var(--secondary);
+        }
+
+        .mission-left h2 {
+            font-size: 40px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+            line-height: 1.15;
+        }
+
+        .mission-left p {
+            color: var(--muted-foreground);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        /* Line Draw SVG Animation */
+        @keyframes drawPath {
+            from {
+                stroke-dasharray: 1000;
+                stroke-dashoffset: 1000;
+            }
+            to {
+                stroke-dasharray: 1000;
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .animated-icon-svg path,
+        .animated-icon-svg circle,
+        .animated-icon-svg line,
+        .animated-icon-svg polyline {
+            animation: drawPath 2.5s ease-out forwards;
+        }
+
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 60px;
+        }
+
+        .mission-grid-item {
+            padding: 24px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--card);
+            text-align: center;
+        }
+
+        .mission-grid-item h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin: 16px 0 8px 0;
+        }
+
+        .mission-grid-item p {
+            font-size: 13px;
+            color: var(--muted-foreground);
+            line-height: 1.5;
+        }
+
+        /* Features Section with Activity widget */
+        .features-section {
+            padding: 120px 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .features-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        /* Mockup EDR Live Activity card mimicking Homie Property activity */
+        .live-mockup-card {
+            background-color: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .mockup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mockup-pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .mockup-pulse-dot::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            animation: ping 1.5s infinite;
+        }
+
+        .mockup-metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .mockup-metric-card {
+            background-color: var(--background);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .mockup-metric-val {
+            font-family: var(--font-mono);
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+            margin-top: 4px;
+        }
+
+        /* Mini HTML/CSS bar graph representation */
+        .mockup-graph-container {
+            height: 100px;
+            display: flex;
+            align-items: end;
+            gap: 8px;
+            padding-top: 10px;
+        }
+
+        .mockup-bar {
+            flex: 1;
+            background-color: #27272a;
+            border-radius: 2px 2px 0 0;
+            transition: all 0.3s ease;
+        }
+
+        .mockup-bar.active {
+            background-color: var(--primary);
+        }
+
+        .features-details-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .features-check-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: var(--radius);
+            transition: background-color 0.2s ease;
+        }
+
+        .features-check-item:hover {
+            background-color: var(--secondary);
+        }
+
+        .check-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Comparison Benchmarks Table */
+        .benchmarks-section {
+            padding: 100px 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            border-top: 1px solid var(--border);
+        }
+
+        .section-intro {
+            text-align: center;
+            margin-bottom: 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-intro h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .section-intro p {
+            font-size: 16px;
+            color: var(--muted-foreground);
+            max-width: 500px;
+        }
+
+        .benchmark-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .benchmark-table th {
+            text-align: left;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--muted-foreground);
+            font-weight: 500;
+        }
+
+        .benchmark-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--foreground);
+        }
+
+        .benchmark-table tr:hover td {
+            background-color: var(--secondary);
+        }
+
+        /* FAQ Accordion */
+        .faq-section {
+            padding: 100px 24px;
+            max-width: 800px;
+            margin: 0 auto;
+            border-top: 1px solid var(--border);
+        }
+
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .faq-item {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background-color: var(--card);
+        }
+
+        .faq-trigger {
+            width: 100%;
+            padding: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-trigger i {
+            transition: transform 0.2s ease;
+            color: var(--muted-foreground);
+        }
+
+        .faq-content {
+            padding: 0 20px 20px 20px;
+            color: var(--muted-foreground);
+            font-size: 14px;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .faq-item.active .faq-content {
+            display: block;
+        }
+
+        .faq-item.active .faq-trigger i {
+            transform: rotate(180deg);
+        }
+
+        footer.landing-footer {
+            padding: 60px 24px;
+            border-top: 1px solid var(--border);
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: var(--muted-foreground);
+        }
+
+        /* ==================== DASHBOARD CONSOLE VIEW ==================== */
+        #view-console {
+            display: none;
+            grid-template-columns: 240px 1fr;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        aside.console-sidebar {
+            background-color: var(--background);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 24px;
+        }
+
+        .sidebar-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .profile-avatar {
+            width: 32px;
+            height: 32px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .profile-role {
+            font-size: 11px;
+            color: var(--muted-foreground);
+        }
+
+        .sidebar-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted-foreground);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            padding-left: 12px;
+        }
+
+        .sidebar-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--muted-foreground);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-item:hover {
+            color: var(--foreground);
+            background-color: var(--secondary);
+        }
+
+        .sidebar-item.active {
+            color: var(--foreground);
+            background-color: var(--secondary);
+            border: 1px solid var(--border);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .agent-status-panel {
+            padding: 12px;
+            border-radius: var(--radius);
+            background-color: var(--secondary);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .agent-status-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--foreground);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .agent-status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary);
+            border-radius: 50%;
+        }
+
+        .agent-status-item {
+            font-size: 11px;
+            color: var(--muted-foreground);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Console Main Pane */
+        .console-main {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header.console-header {
+            height: 60px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            background-color: var(--background);
+        }
+
+        .console-content {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Diagnostics & Stats layout */
+        .dashboard-row {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .minimal-stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .minimal-stat-card {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .min-stat-label {
+            font-size: 12px;
+            color: var(--muted-foreground);
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .min-stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+            font-family: var(--font-mono);
+        }
+
+        .list-card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 14px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .shadcn-table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .shadcn-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .shadcn-table th {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--muted-foreground);
+            font-weight: 500;
+        }
+
+        .shadcn-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--foreground);
+        }
+
+        .shadcn-table tr {
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .shadcn-table tr:hover td {
+            background-color: var(--secondary);
+        }
+
+        /* Telemetry logs output console */
+        .terminal-block {
+            background-color: #030303;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            height: 420px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .terminal-row {
+            display: flex;
+            gap: 12px;
+            line-height: 1.4;
+            color: var(--muted-foreground);
+        }
+
+        .term-badge {
+            color: var(--primary);
+            font-weight: 600;
+            min-width: 60px;
+        }
+
+        .term-txt {
+            color: #e4e4e7;
+            flex: 1;
+        }
+
+        /* SVG process relationship map */
+        .tree-container {
+            width: 100%;
+            height: 480px;
+            background-color: #030303;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .process-svg-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .tree-node circle {
+            fill: var(--secondary);
+            stroke: var(--border);
+            stroke-width: 2px;
+        }
+
+        .tree-node.active circle {
+            stroke: var(--primary);
+            fill: rgba(34, 197, 94, 0.05);
+        }
+
+        .tree-node.alert circle {
+            stroke: var(--destructive);
+            fill: rgba(239, 68, 68, 0.05);
+        }
+
+        .tree-node text {
+            font-size: 12px;
+            fill: var(--foreground);
+            font-weight: 500;
+        }
+
+        .tree-node .pid-txt {
+            font-size: 10px;
+            fill: var(--muted-foreground);
+            font-family: var(--font-mono);
+        }
+
+        .tree-link {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 1.5px;
+        }
+
+        /* Forensics Drawer on alert selected */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            right: -460px;
+            width: 440px;
+            height: 100%;
+            background-color: var(--background);
+            border-left: 1px solid var(--border);
+            z-index: 80;
+            box-shadow: -10px 0 25px rgba(0, 0, 0, 0.5);
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer-overlay.active {
+            right: 0;
+        }
+
+        .drawer-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-body {
+            padding: 24px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .drawer-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .drawer-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--muted-foreground);
+        }
+
+        .drawer-section-content {
+            font-size: 14px;
+            color: white;
+            line-height: 1.5;
+        }
+
+        .drawer-section-code {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background-color: var(--secondary);
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: var(--radius);
+            word-break: break-all;
+        }
+
+        /* Toggle switches settings block */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background-color: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .switch-btn {
+            width: 44px;
+            height: 24px;
+            background-color: var(--border);
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .switch-btn.active {
+            background-color: var(--primary);
+        }
+
+        .switch-toggle {
+            width: 18px;
+            height: 18px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.2s ease;
+        }
+
+        .switch-btn.active .switch-toggle {
+            transform: translateX(20px);
+        }
+
+        .settings-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 600px;
+        }
+
+        /* Quarantine Vault */
+        .quarantine-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quarantine-item {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .quarantine-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .quarantine-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .quarantine-hash {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--muted-foreground);
+        }
+
+        .quarantine-path {
+            font-size: 12px;
+            color: var(--muted-foreground);
+        }
+
+        /* Modals Confirmation overlay */
+        .modal-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+
+        .modal-bg.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background-color: var(--background);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 440px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-desc {
+            font-size: 14px;
+            color: var(--muted-foreground);
+            line-height: 1.5;
+        }
+
+        .modal-btns {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== LANDING PAGE VIEW ==================== -->
+    <div id="view-landing">
+        <header class="landing-header" id="floating-header">
+            <div class="nav-inner">
+                <a href="#" class="logo-group" onclick="scrollToTop()">
+                    <div class="logo-square">S</div>
+                    <span>SentraEDR</span>
+                </a>
+                
+                <ul class="landing-nav-links">
+                    <li class="landing-nav-link"><a href="#mission">Misyon</a></li>
+                    <li class="landing-nav-link"><a href="#features">Özellikler</a></li>
+                    <li class="landing-nav-link"><a href="#benchmarks">Karşılaştırma</a></li>
+                    <li class="landing-nav-link"><a href="#faq">Sık Sorulanlar</a></li>
+                </ul>
+
+                <button class="btn-shadcn primary btn-sm" onclick="launchConsole()">Konsolu Aç</button>
+            </div>
+        </header>
+
+        <!-- Homie Scaling video Hero section adapted for SentraEDR -->
+        <section class="hero-section">
+            <div class="hero-video-container">
+                <div class="hero-video-wrapper" id="scroll-wrapper">
+                    <!-- Abstract blue/green network particle video to serve as high end EDR backdrop -->
+                    <video autoPlay loop muted playsInline src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/af7687fd-f2ad-4f2a-96f0-b56fa7d3769c-08wERpo5U1sktxs1vcRsJW9ueslNZv.mp4"></video>
+                </div>
+            </div>
+
+            <!-- Big background text offset on scroll -->
+            <div class="hero-bg-text-overlay" id="title-wrapper">
+                <span class="hero-bg-title">SENTRA</span>
+            </div>
+
+            <div class="hero-text-card">
+                <div class="hero-badge">
+                    <i data-lucide="shield-check"></i>
+                    <span>Rust & Windows ETW Altyapısı</span>
+                </div>
+                <h1 style="color: white;">Kernel Seviyesinde Endpoint Koruma & Analiz</h1>
+                <p>Boşta 45MB bellek tüketimi, saniyede binlerce olay işleme kapasitesi ve "Quarantine First" güvenlik ilkeleriyle uç noktalarınızı sessizce korur.</p>
+                
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button class="btn-shadcn primary" onclick="launchConsole()">
+                        Konsolu Başlat
+                        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <a href="#mission" class="btn-shadcn outline">Teknik Detaylar</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mission Section -->
+        <section class="mission-section" id="mission">
+            <div class="mission-bg-overlay">
+                <span class="mission-bg-text">MISSION</span>
+            </div>
+
+            <div class="mission-card-wrapper">
+                <div class="mission-inner-card">
+                    <div class="mission-left">
+                        <p class="text-sm uppercase tracking-[0.2em] text-emerald-400 font-medium mb-4">MİSYONUMUZ</p>
+                        <h2>Kurumsal Güvenlik, Minimum Kaynak Tüketimi</h2>
+                        <p>SentraEDR; arka planda sisteminizi yavaşlatmadan, sıfır gecikmeli Windows Kernel (ETW) telemetrisini işlemek için özel olarak optimize edilmiştir.</p>
+                        <p>Tokio yalıtılmış thread havuzları ve lock-free veri yapıları sayesinde, saniyede on binlerce olay gelse dahi çökmelere ve kaynak tıkanmalarına karşı dayanıklıdır.</p>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center;">
+                        <svg class="animated-icon-svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="mission-grid">
+                    <div class="mission-grid-item border-card">
+                        <svg class="animated-icon-svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                        <h3>Hafif Bellek Profili</h3>
+                        <p>Boşta 45MB RAM hedefiyle çalışarak kaynak canavarı güvenlik agent modellerini geride bırakır.</p>
+                    </div>
+                    <div class="mission-grid-item border-card">
+                        <svg class="animated-icon-svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5">
+                            <path d="M2 12h20M12 2v20" />
+                        </svg>
+                        <h3>Canlı ETW Telemetrisi</h3>
+                        <p>Süreç başlatma, kayıt defteri modifikasyonu, DLL enjeksiyon denemelerini anında yakalar.</p>
+                    </div>
+                    <div class="mission-grid-item border-card">
+                        <svg class="animated-icon-svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5">
+                            <path d="M21 2v6h-6M3 22v-6h6M21 22v-6h-6M3 2v6h6" />
+                        </svg>
+                        <h3>Karantina ve Rollback</h3>
+                        <p>Süreçleri durdurmak yerine dondurur, ağ soketlerini izole eder ve rollback yedekleri hazırlar.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Layout with Live activity widget -->
+        <section class="features-section" id="features">
+            <div class="features-layout">
+                <!-- Left: EDR Live Activity card -->
+                <div class="live-mockup-card">
+                    <div class="mockup-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="mockup-pulse-dot"></span>
+                            <span style="font-size: 14px; font-weight: 600; color: white;">Sentra Ingestion Activity</span>
+                        </div>
+                        <span style="font-size: 12px; color: var(--muted-foreground); font-family: var(--font-mono);">LIVE</span>
+                    </div>
+
+                    <div class="mockup-metrics-grid">
+                        <div class="mockup-metric-card">
+                            <span style="font-size: 11px; color: var(--muted-foreground); text-transform: uppercase;">İncelenen Olay</span>
+                            <div class="mockup-metric-val" id="mock-views-count">128,491</div>
+                        </div>
+                        <div class="mockup-metric-card">
+                            <span style="font-size: 11px; color: var(--muted-foreground); text-transform: uppercase;">Ortalama CPU</span>
+                            <div class="mockup-metric-val">1.2%</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p style="font-size: 13px; color: white; font-weight: 500; margin-bottom: 8px;">Son 12 Dakika Sinyal Hızı</p>
+                        <div class="mockup-graph-container" id="mock-graph">
+                            <div class="mockup-bar" style="height: 40px;"></div>
+                            <div class="mockup-bar" style="height: 60px;"></div>
+                            <div class="mockup-bar" style="height: 35px;"></div>
+                            <div class="mockup-bar" style="height: 50px;"></div>
+                            <div class="mockup-bar" style="height: 85px;"></div>
+                            <div class="mockup-bar" style="height: 70px;"></div>
+                            <div class="mockup-bar" style="height: 45px;"></div>
+                            <div class="mockup-bar" style="height: 65px;"></div>
+                            <div class="mockup-bar active" style="height: 95px;"></div>
+                            <div class="mockup-bar" style="height: 80px;"></div>
+                            <div class="mockup-bar" style="height: 55px;"></div>
+                            <div class="mockup-bar" style="height: 40px;"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p style="font-size: 13px; color: white; font-weight: 500; margin-bottom: 8px;">En Aktif Servisler</p>
+                        <div style="display: flex; flex-direction: column; gap: 8px;" id="mock-active-list">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+                                <span style="color: var(--muted-foreground);">svchost.exe</span>
+                                <span style="color: white; font-family: var(--font-mono);">3,842 olay</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+                                <span style="color: var(--muted-foreground);">powershell.exe</span>
+                                <span style="color: white; font-family: var(--font-mono);">1,492 olay</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Check list -->
+                <div class="features-details-list">
+                    <h2 style="font-size: 40px; font-weight: 700; color: white; letter-spacing: -0.03em; margin-bottom: 12px;">Sorunsuz Uç Nokta Yönetimi</h2>
+                    <p style="color: var(--muted-foreground); font-size: 16px; margin-bottom: 24px; line-height: 1.5;">Gelişmiş motor kuralları, öncelikli telemetri kanalları ve karantina kasasıyla sisteminizi uçtan uca kontrol edin.</p>
+                    
+                    <div class="features-check-item">
+                        <div class="check-circle"><i data-lucide="check" style="width: 14px; height: 14px;"></i></div>
+                        <span style="font-size: 14px; color: white; font-weight: 500;">5 dakikada kuruluma hazır hafif binary mimari.</span>
+                    </div>
+                    <div class="features-check-item">
+                        <div class="check-circle"><i data-lucide="check" style="width: 14px; height: 14px;"></i></div>
+                        <span style="font-size: 14px; color: white; font-weight: 500;">Düşük öncelikli olayları eleyen Telemetry Overload koruması.</span>
+                    </div>
+                    <div class="features-check-item">
+                        <div class="check-circle"><i data-lucide="check" style="width: 14px; height: 14px;"></i></div>
+                        <span style="font-size: 14px; color: white; font-weight: 500;">Tek tıkla karantinaya alma ve rollback desteği.</span>
+                    </div>
+                    <div class="features-check-item">
+                        <div class="check-circle"><i data-lucide="check" style="width: 14px; height: 14px;"></i></div>
+                        <span style="font-size: 14px; color: white; font-weight: 500;">Yönlendirilmiş Tokio A, B, C, D paralel çalıştırma katmanları.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benchmark table -->
+        <section class="benchmarks-section" id="benchmarks">
+            <div class="section-intro">
+                <h2>Performans Karşılaştırmaları</h2>
+                <p>SentraEDR, kurumsal EDR rakiplerine göre en hafif kaynak bütçesini garanti eder.</p>
+            </div>
+            
+            <div class="border-card" style="padding: 8px;">
+                <table class="benchmark-table">
+                    <thead>
+                        <tr>
+                            <th>Ölçüm</th>
+                            <th>SentraEDR Modeli</th>
+                            <th>Standart EDR Paketleri</th>
+                            <th>Mimari Çözüm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Idle RAM Değeri</td>
+                            <td style="color: var(--primary); font-weight: 600;">&lt; 45 MB</td>
+                            <td>450 MB - 1.2 GB</td>
+                            <td>Rust derlenmiş yerel kodlama ve optimize edilmiş bellek yönetimi.</td>
+                        </tr>
+                        <tr>
+                            <td>CPU Yükü</td>
+                            <td style="color: var(--primary); font-weight: 600;">%0.8 - %1.5</td>
+                            <td>%8.0 - %15.0</td>
+                            <td>Kernel abonelik modeli sayesinde sürekli anlamsız disk taraması yapılmaz.</td>
+                        </tr>
+                        <tr>
+                            <td>Kuyruk Taşması</td>
+                            <td style="color: var(--primary); font-weight: 600;">Engelli Sınırlandırma</td>
+                            <td>Süreç çökmesi / OOM</td>
+                            <td>Sınırlandırılmış kanallar (Bounded channels) ve öncelikli kuyruk.</td>
+                        </tr>
+                        <tr>
+                            <td>İyileştirme Yöntemi</td>
+                            <td style="color: var(--primary); font-weight: 600;">Önce Askıya Al</td>
+                            <td>Direkt Silme</td>
+                            <td>Otomatik rollback snapshot ve ağ izolasyonu ile karantina.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- FAQs Accordions -->
+        <section class="faq-section" id="faq">
+            <div class="section-intro">
+                <h2>Sık Sorulan Sorular</h2>
+                <p>SentraEDR'ın mimari kararları ve çalışma prensipleri.</p>
+            </div>
+
+            <div class="faq-list">
+                <div class="faq-item" id="faq-1">
+                    <button class="faq-trigger" onclick="toggleFaq('faq-1')">
+                        Neden electron veya heavy runtime frameworkler tercih edilmedi?
+                        <i data-lucide="chevron-down" style="width: 18px; height: 18px;"></i>
+                    </button>
+                    <div class="faq-content">
+                        Kurumsal uç noktalarda en düşük kaynak tüketimini (RAM &lt; 150MB) yakalamak amacıyla, NodeJS ve Python çalışma zamanlarının getirdiği ek yükler elenmiş ve platform tamamen native Rust + lightweight Tauri ile tasarlanmıştır.
+                    </div>
+                </div>
+
+                <div class="faq-item" id="faq-2">
+                    <button class="faq-trigger" onclick="toggleFaq('faq-2')">
+                        Saniyede binlerce event geldiğinde sistem nasıl korunur?
+                        <i data-lucide="chevron-down" style="width: 18px; height: 18px;"></i>
+                    </button>
+                    <div class="faq-content">
+                        Sistem, aşırı olay yükü durumunda dynamic load shedding mekanizmasını devreye alır. Bounded channels altyapısı sayesinde düşük öncelikli olaylar (Registry okumaları gibi) kuyruğa girmeden elenirken, kritik olaylar (Process Injection, Persistence) öncelikli işlenir.
+                    </div>
+                </div>
+
+                <div class="faq-item" id="faq-3">
+                    <button class="faq-trigger" onclick="toggleFaq('faq-3')">
+                        Hatalı Karantina (Wrong Remediation) riski nasıl engellenir?
+                        <i data-lucide="chevron-down" style="width: 18px; height: 18px;"></i>
+                    </button>
+                    <div class="faq-content">
+                        Sistem "Quarantine First" modelini kullanır. Bir dosya veya süreç şüpheli bulunduğunda anında silinmez. Önce süreç askıya alınır, ağ soketleri kapatılır, rollback yedeği hazırlanır ve dosya karantina kasasına taşınır. Karar hatalıysa işlem tek tıkla geri alınabilir.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="landing-footer">
+            <span>© 2026 SentraEDR. Tüm Hakları Saklıdır.</span>
+            <span>Hackathon Project</span>
+        </footer>
+    </div>
+
+    <!-- ==================== DASHBOARD CONSOLE VIEW ==================== -->
+    <div id="view-console">
+        
+        <!-- Sidebar -->
+        <aside class="console-sidebar">
+            <div class="sidebar-profile">
+                <div class="profile-avatar">OP</div>
+                <div class="profile-info">
+                    <span class="profile-name">SecOps Admin</span>
+                    <span class="profile-role">sentra-agent-01</span>
+                </div>
+            </div>
+
+            <div>
+                <div class="sidebar-section-title">İzleme</div>
+                <ul class="sidebar-group sidebar-menu">
+                    <li class="sidebar-item active" onclick="switchConsoleTab('overview')" id="tab-btn-overview">
+                        <i data-lucide="layout-grid" style="width: 16px; height: 16px;"></i>
+                        Tehdit Paneli
+                    </li>
+                    <li class="sidebar-item" onclick="switchConsoleTab('telemetry')" id="tab-btn-telemetry">
+                        <i data-lucide="activity" style="width: 16px; height: 16px;"></i>
+                        Canlı Akış
+                    </li>
+                    <li class="sidebar-item" onclick="switchConsoleTab('process')" id="tab-btn-process">
+                        <i data-lucide="git-merge" style="width: 16px; height: 16px;"></i>
+                        Süreç Explorer
+                    </li>
+                </ul>
+
+                <div class="sidebar-section-title">Yönetim</div>
+                <ul class="sidebar-group sidebar-menu">
+                    <li class="sidebar-item" onclick="switchConsoleTab('quarantine')" id="tab-btn-quarantine">
+                        <i data-lucide="archive" style="width: 16px; height: 16px;"></i>
+                        Karantina Kasası
+                    </li>
+                    <li class="sidebar-item" onclick="switchConsoleTab('settings')" id="tab-btn-settings">
+                        <i data-lucide="sliders" style="width: 16px; height: 16px;"></i>
+                        Motor Ayarları
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="agent-status-panel">
+                    <div class="agent-status-title">
+                        <div class="agent-status-dot"></div>
+                        Agent: Çalışıyor
+                    </div>
+                    <div class="agent-status-item">
+                        <span>RAM:</span>
+                        <span id="ram-meter" style="color: var(--primary); font-family: var(--font-mono);">42.4 MB</span>
+                    </div>
+                    <div class="agent-status-item">
+                        <span>Uptime:</span>
+                        <span>02h 14m</span>
+                    </div>
+                </div>
+                <button class="btn-shadcn ghost btn-sm" onclick="backToLanding()">
+                    <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
+                    Ana Sayfaya Dön
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Console Page -->
+        <div class="console-main">
+            <header class="console-header">
+                <div class="header-title-group">
+                    <h2 id="console-page-title" style="font-size: 15px; font-weight: 600; color: white;">Tehdit Paneli</h2>
+                    <span class="badge-shadcn green">
+                        <span style="width: 6px; height: 6px; background-color: var(--primary); border-radius: 50%; margin-right: 6px; display: inline-block;"></span>
+                        ETW Oturumu Aktif
+                    </span>
+                </div>
+                <div style="display: flex; gap: 20px; align-items: center; font-size: 13px; color: var(--muted-foreground);">
+                    <span>Uç Nokta: <strong style="color: white;">WIN11-ENT-SEC</strong></span>
+                    <span>CPU: <strong id="cpu-stat" style="color: white; font-family: var(--font-mono);">1.2%</strong></span>
+                </div>
+            </header>
+
+            <div class="console-content">
+                
+                <!-- Stats row -->
+                <div class="minimal-stats-bar" id="console-stats-bar">
+                    <div class="minimal-stat-card border-card">
+                        <span class="min-stat-label">Toplam İncelenen Olay</span>
+                        <span class="min-stat-value" id="tot-events-val">128,491</span>
+                    </div>
+                    <div class="minimal-stat-card border-card">
+                        <span class="min-stat-label">İzlenen Süreçler</span>
+                        <span class="min-stat-value">142</span>
+                    </div>
+                    <div class="minimal-stat-card border-card" style="border-color: rgba(239, 68, 68, 0.2);">
+                        <span class="min-stat-label" style="color: #f87171;">Bekleyen Alarmlar</span>
+                        <span class="min-stat-value" id="tot-threats-val" style="color: var(--destructive);">2</span>
+                    </div>
+                </div>
+
+                <!-- ==================== TAB: OVERVIEW ==================== -->
+                <div class="dashboard-row" id="tab-overview">
+                    
+                    <!-- Left Column: Alerts Table -->
+                    <div class="border-card">
+                        <div class="list-card-header">
+                            <span>Tespit Edilen Tehdit Olayları</span>
+                            <span class="badge-shadcn red" id="threats-badge">2 Aktif Tehdit</span>
+                        </div>
+                        <div class="shadcn-table-container">
+                            <table class="shadcn-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tehdit Tipi</th>
+                                        <th>Süreç</th>
+                                        <th>Önem</th>
+                                        <th>Güvenlik Kuralı</th>
+                                        <th>Eylemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="alerts-table-body">
+                                    <tr onclick="openThreatDrawer('lsass')" id="alert-row-lsass">
+                                        <td style="font-weight: 600; color: white;">LSASS Yetki Dökümü Girişimi</td>
+                                        <td><span style="font-family: var(--font-mono); font-size: 12px; color: var(--muted-foreground);">mimikatz.exe</span></td>
+                                        <td><span class="badge-shadcn red">Critical</span></td>
+                                        <td>T1003 Credential Dumping</td>
+                                        <td>
+                                            <button class="btn-shadcn primary btn-sm" onclick="event.stopPropagation(); triggerRemediateModal('lsass')">Karantinaya Al</button>
+                                        </td>
+                                    </tr>
+                                    <tr onclick="openThreatDrawer('powershell')" id="alert-row-powershell">
+                                        <td style="font-weight: 600; color: white;">Gizlenmiş PowerShell Yürütme</td>
+                                        <td><span style="font-family: var(--font-mono); font-size: 12px; color: var(--muted-foreground);">powershell.exe</span></td>
+                                        <td><span class="badge-shadcn yellow">High</span></td>
+                                        <td>T1059.001 PowerShell Exec</td>
+                                        <td>
+                                            <button class="btn-shadcn outline btn-sm" onclick="event.stopPropagation(); triggerRemediateModal('powershell')">Bağlantıyı Kes</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Diagnostics -->
+                    <div class="border-card" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3 style="font-size: 14px; font-weight: 600; color: white;">ETW Sinyal Akış Grafiği</h3>
+                        <div class="chart-box">
+                            <canvas id="throughputChart"></canvas>
+                        </div>
+                        
+                        <div style="border-top: 1px solid var(--border); padding-top: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--muted-foreground);">Heuristic Risk Puanı</span>
+                                <span style="color: var(--destructive); font-weight: 600;" id="risk-score-ui">65/100</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--muted-foreground);">Tepki Modu</span>
+                                <span style="color: white;">Yarı-Otomatik (Human-in-the-Loop)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ==================== TAB: TELEMETRY STREAM ==================== -->
+                <div id="tab-telemetry" style="display: none; flex-direction: column; gap: 16px;">
+                    <div class="terminal-block" id="console-stream-log">
+                        <!-- Filled dynamically by interval -->
+                    </div>
+                </div>
+
+                <!-- ==================== TAB: PROCESS Explorer ==================== -->
+                <div id="tab-process" style="display: none; flex-direction: column; gap: 20px;">
+                    <div class="tree-container">
+                        <svg class="process-svg-canvas">
+                            <g>
+                                <path class="tree-link" d="M120,240 C220,240 220,120 320,120" />
+                                <path class="tree-link" d="M120,240 C220,240 220,240 320,240" />
+                                <path class="tree-link" d="M120,240 C220,240 220,360 320,360" />
+                                <path class="tree-link" d="M320,360 C420,360 420,360 520,360" />
+                            </g>
+                            <g>
+                                <g class="tree-node active" transform="translate(120, 240)">
+                                    <circle r="14" />
+                                    <text dx="22" dy="4">explorer.exe</text>
+                                    <text dx="22" dy="16" class="pid-txt">PID: 1420</text>
+                                </g>
+                                <g class="tree-node" transform="translate(320, 120)">
+                                    <circle r="12" />
+                                    <text dx="18" dy="4">chrome.exe</text>
+                                    <text dx="18" dy="16" class="pid-txt">PID: 4890</text>
+                                </g>
+                                <g class="tree-node" transform="translate(320, 240)">
+                                    <circle r="12" />
+                                    <text dx="18" dy="4">svchost.exe</text>
+                                    <text dx="18" dy="16" class="pid-txt">PID: 884</text>
+                                </g>
+                                <g class="tree-node" transform="translate(320, 360)">
+                                    <circle r="12" />
+                                    <text dx="18" dy="4">cmd.exe</text>
+                                    <text dx="18" dy="16" class="pid-txt">PID: 7720</text>
+                                </g>
+                                <g class="tree-node alert" id="svg-node-malicious" transform="translate(520, 360)">
+                                    <circle r="14" />
+                                    <text dx="22" dy="4" style="fill: var(--destructive); font-weight: 600;">mimikatz.exe</text>
+                                    <text dx="22" dy="16" class="pid-txt" id="svg-node-malicious-pid">PID: 9021</text>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- ==================== TAB: QUARANTINE VAULT ==================== -->
+                <div id="tab-quarantine" style="display: none; flex-direction: column; gap: 16px;">
+                    <div class="quarantine-list" id="quarantine-items-container">
+                        <div style="color: var(--muted-foreground); font-size: 14px; text-align: center; padding: 40px;" id="quarantine-empty-msg">
+                            Karantinaya alınmış herhangi bir dosya bulunmamaktadır.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== TAB: MOTOR SETTINGS ==================== -->
+                <div id="tab-settings" style="display: none; flex-direction: column; gap: 24px;">
+                    <div class="settings-grid">
+                        <div class="switch-container">
+                            <div class="switch-label">
+                                <span class="switch-title" style="color: white; font-weight: 500;">Gerçek Zamanlı Engelleme (Active Protection)</span>
+                                <span class="switch-desc" style="font-size: 12px; color: var(--muted-foreground);">Süreç davranışı analiz edildikten sonra şüpheli işlemler otomatik dondurulur.</span>
+                            </div>
+                            <div class="switch-btn active" id="sw-active-prot" onclick="toggleSwitch('sw-active-prot')">
+                                <div class="switch-toggle"></div>
+                            </div>
+                        </div>
+
+                        <div class="switch-container">
+                            <div class="switch-label">
+                                <span class="switch-title" style="color: white; font-weight: 500;">YARA Kural Analizi</span>
+                                <span class="switch-desc" style="font-size: 12px; color: var(--muted-foreground);">Disk dosyaları ve bellek bölgeleri periyodik YARA-x motoruyla taranır.</span>
+                            </div>
+                            <div class="switch-btn active" id="sw-yara-scan" onclick="toggleSwitch('sw-yara-scan')">
+                                <div class="switch-toggle"></div>
+                            </div>
+                        </div>
+
+                        <div class="switch-container">
+                            <div class="switch-label">
+                                <span class="switch-title" style="color: white; font-weight: 500;">Çoklu Tokio Separation</span>
+                                <span class="switch-desc" style="font-size: 12px; color: var(--muted-foreground);">ETW, Detection ve Network IO için ayrılmış iş parçacığı havuzları kullanır.</span>
+                            </div>
+                            <div class="switch-btn active" id="sw-tokio-sep" onclick="toggleSwitch('sw-tokio-sep')">
+                                <div class="switch-toggle"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== FORENSICS / THREAT DRAWER ==================== -->
+    <div class="drawer-overlay" id="threat-drawer">
+        <div class="drawer-header">
+            <h3 style="font-size: 16px; font-weight: 600; color: white;" id="drawer-title">Tehdit Detayları</h3>
+            <button class="btn-shadcn ghost btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding:0; display:flex; align-items:center; justify-content:center;" onclick="closeThreatDrawer()">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+        <div class="drawer-body">
+            <div class="drawer-section">
+                <span class="drawer-section-title">Hedef Süreç Bilgisi</span>
+                <div class="drawer-section-content" id="drawer-proc-name">mimikatz.exe (PID: 9021)</div>
+            </div>
+            <div class="drawer-section">
+                <span class="drawer-section-title">MITRE ATT&CK Taktik Eşleşmesi</span>
+                <div class="drawer-section-content" id="drawer-mitre">Credential Access (T1003)</div>
+            </div>
+            <div class="drawer-section">
+                <span class="drawer-section-title">Güven & Risk Puanı</span>
+                <div class="drawer-section-content">Güvenilir Derecesi: %98 | Risk Skoru: 95/100</div>
+            </div>
+            <div class="drawer-section">
+                <span class="drawer-section-title">Canlı Olay Kanıtı (Forensic Log)</span>
+                <div class="drawer-section-code" id="drawer-log-code">
+                    [ETW_THREAD_INGEST] SYSTEM_LOGGER: mimikatz.exe initiated a connection handle to LSASS.exe with access mask 0x0010 (PROCESS_VM_READ). Risk correlation threshold exceeded.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== REMEDIATION MODAL ==================== -->
+    <div class="modal-bg" id="remediate-modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">
+                <i data-lucide="alert-triangle" style="color: var(--destructive);"></i>
+                <span id="modal-title-txt">İyileştirme Eylemi Onayı</span>
+            </div>
+            <div class="modal-desc" id="modal-desc-txt">
+                Şüpheli süreç dondurulacak (suspend), diskteki binary dosya karantinaya taşınacak ve ilgili registry değişiklikleri rollback yedeğine alınacaktır. İşlemi onaylıyor musunuz?
+            </div>
+            <div class="modal-btns">
+                <button class="btn-shadcn outline btn-sm" onclick="closeRemediateModal()">İptal</button>
+                <button class="btn-shadcn destructive btn-sm" id="modal-confirm-btn" onclick="executeRemediation()">Eylemi Çalıştır</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Init Lucide Icons
+        lucide.createIcons();
+
+        // State Management
+        let currentConsoleTab = 'overview';
+        let totalEvents = 128491;
+        let pendingAlertsCount = 2;
+        let selectedAlertForAction = '';
+
+        // FAQ Accordions toggler
+        function toggleFaq(faqId) {
+            const item = document.getElementById(faqId);
+            const isActive = item.classList.contains('active');
+            
+            document.querySelectorAll('.faq-item').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        }
+
+        // Homie Video Background scroll scaling effect
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const maxScroll = 450;
+            const scrollProgress = Math.min(scrollY / maxScroll, 1);
+
+            // Compute values matching Homie easing logic
+            const scale = 1 - (scrollProgress * 0.12);
+            const borderRadius = scrollProgress * 48;
+            const heightVal = 100 - (scrollProgress * 30);
+
+            const wrapper = document.getElementById('scroll-wrapper');
+            const titleOverlay = document.getElementById('title-wrapper');
+            const header = document.getElementById('floating-header');
+
+            if (wrapper) {
+                wrapper.style.transform = `scale(${scale})`;
+                wrapper.style.borderRadius = `${borderRadius}px`;
+                wrapper.style.height = `${heightVal}vh`;
+            }
+
+            if (titleOverlay) {
+                titleOverlay.style.transform = `translateY(${scrollProgress * 150}px)`;
+                titleOverlay.style.opacity = 1 - (scrollProgress * 0.85);
+            }
+
+            // Header background opacity based on scroll
+            if (header) {
+                if (scrollY > 50) {
+                    header.style.padding = "10px 24px";
+                } else {
+                    header.style.padding = "16px 24px";
+                }
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Launch console dashboard view
+        function launchConsole() {
+            document.getElementById('view-landing').style.display = 'none';
+            document.getElementById('view-console').style.display = 'grid';
+            setTimeout(initChart, 50);
+        }
+
+        // Return to landing view
+        function backToLanding() {
+            document.getElementById('view-console').style.display = 'none';
+            document.getElementById('view-landing').style.display = 'flex';
+            scrollToTop();
+        }
+
+        // Switch internal console views
+        function switchConsoleTab(tabName) {
+            currentConsoleTab = tabName;
+
+            const titleMap = {
+                'overview': 'Tehdit Paneli',
+                'telemetry': 'ETW Canlı Akış',
+                'process': 'Süreç Explorer',
+                'quarantine': 'Karantina Kasası',
+                'settings': 'Motor Ayarları'
+            };
+            document.getElementById('console-page-title').innerText = titleMap[tabName];
+
+            // Sidebar active class toggles
+            document.querySelectorAll('.sidebar-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+
+            // Hide/Show main content blocks
+            document.getElementById('tab-overview').style.display = 'none';
+            document.getElementById('tab-telemetry').style.display = 'none';
+            document.getElementById('tab-process').style.display = 'none';
+            document.getElementById('tab-quarantine').style.display = 'none';
+            document.getElementById('tab-settings').style.display = 'none';
+
+            const statsBar = document.getElementById('console-stats-bar');
+            if (tabName === 'process' || tabName === 'settings' || tabName === 'quarantine') {
+                statsBar.style.display = 'none';
+            } else {
+                statsBar.style.display = 'grid';
+            }
+
+            document.getElementById(`tab-${tabName}`).style.display = (tabName === 'overview') ? 'grid' : 'flex';
+        }
+
+        // Telemetry generator
+        const processNames = ['svchost.exe', 'conhost.exe', 'regedit.exe', 'powershell.exe', 'cmd.exe', 'curl.exe', 'spoolsv.exe'];
+        function appendTelemetryRow() {
+            totalEvents += 1;
+            document.getElementById('tot-events-val').innerText = totalEvents.toLocaleString('en-US');
+            
+            // Sync with landing page live activity views counter
+            const mockCounter = document.getElementById('mock-views-count');
+            if (mockCounter) mockCounter.innerText = totalEvents.toLocaleString('en-US');
+
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+            
+            const badges = ['SYS_PROC', 'REG_MUT', 'TCP_CONN', 'ETW_ING'];
+            const badge = badges[Math.floor(Math.random() * badges.length)];
+            const pid = Math.floor(Math.random() * 9000) + 1000;
+            const proc = processNames[Math.floor(Math.random() * processNames.length)];
+
+            let msg = '';
+            if (badge === 'SYS_PROC') {
+                msg = `Process launched: PID ${pid} | Path: C:\\Windows\\System32\\${proc}`;
+            } else if (badge === 'REG_MUT') {
+                msg = `Registry entry written: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\${proc}`;
+            } else if (badge === 'TCP_CONN') {
+                msg = `Outbound socket connection: PID ${pid} connected to 185.190.140.23:443 (ESTABLISHED)`;
+            } else {
+                msg = `Normalized ETW event schema parse check OK for provider Microsoft-Windows-Kernel-Process`;
+            }
+
+            const rowHtml = `
+                <div class="terminal-row">
+                    <span class="telemetry-time">${timeStr}</span>
+                    <span class="term-badge">[${badge}]</span>
+                    <span class="term-txt">${msg}</span>
+                </div>
+            `;
+
+            const container = document.getElementById('console-stream-log');
+            if (container) {
+                container.insertAdjacentHTML('afterbegin', rowHtml);
+                if (container.children.length > 50) {
+                    container.removeChild(container.lastChild);
+                }
+            }
+        }
+
+        setInterval(appendTelemetryRow, 1100);
+
+        // Sidebar widgets active settings
+        function toggleSwitch(id) {
+            const btn = document.getElementById(id);
+            btn.classList.toggle('active');
+        }
+
+        // Threat Forensics Drawer Controls
+        function openThreatDrawer(alertType) {
+            const drawer = document.getElementById('threat-drawer');
+            const title = document.getElementById('drawer-title');
+            const proc = document.getElementById('drawer-proc-name');
+            const mitre = document.getElementById('drawer-mitre');
+            const logCode = document.getElementById('drawer-log-code');
+
+            if (alertType === 'lsass') {
+                title.innerText = 'LSASS Tehdit Detayları';
+                proc.innerText = 'mimikatz.exe (PID: 9021)';
+                mitre.innerText = 'Credential Access (T1003)';
+                logCode.innerText = `[ETW_THREAD_INGEST] PROCESS_LOGGER: Process mimikatz.exe attempted to open a process access handle to lsass.exe (Local Security Authority Subsystem Service) with PROCESS_VM_READ permissions.\n[DETECTION_ENGINE] HEURISTIC: Threat risk verified. Action: ALERT triggered.`;
+            } else {
+                title.innerText = 'PowerShell Tehdit Detayları';
+                proc.innerText = 'powershell.exe (PID: 7720)';
+                mitre.innerText = 'Execution - PowerShell (T1059.001)';
+                logCode.innerText = `[ETW_THREAD_INGEST] POWERSHELL_LOGGER: Process powershell.exe executed an encoded command string 'SUVYKE5ldy1PYmplY3QgTmV...' which translates to an outbound file download request.\n[DETECTION_ENGINE] Risk assessment: HIGH (Score: 82). Outbound beaconing threat suspected.`;
+            }
+
+            drawer.classList.add('active');
+        }
+
+        function closeThreatDrawer() {
+            document.getElementById('threat-drawer').classList.remove('active');
+        }
+
+        // Remediation triggers
+        function triggerRemediateModal(alertType) {
+            selectedAlertForAction = alertType;
+            const overlay = document.getElementById('remediate-modal-overlay');
+            const title = document.getElementById('modal-title-txt');
+            const desc = document.getElementById('modal-desc-txt');
+
+            if (alertType === 'lsass') {
+                title.innerText = 'LSASS Bellek Koruması';
+                desc.innerText = 'mimikatz.exe (PID: 9021) süreci dondurulacaktır. Disk dosyası karantina altına taşınacak ve yetkisiz bellek dökümü kanalları bloke edilecektir. Onaylıyor musunuz?';
+            } else {
+                title.innerText = 'Powershell Süreç Kısıtlaması';
+                desc.innerText = 'powershell.exe (PID: 7720) dondurulacaktır. Çıkış yaptığı şüpheli uzak IP adresi, işletim sistemi güvenlik duvarında (Windows Defender Firewall) bloke edilecektir.';
+            }
+
+            overlay.classList.add('active');
+        }
+
+        function closeRemediateModal() {
+            document.getElementById('remediate-modal-overlay').classList.remove('active');
+        }
+
+        function executeRemediation() {
+            closeRemediateModal();
+
+            if (selectedAlertForAction === 'lsass') {
+                const row = document.getElementById('alert-row-lsass');
+                if (row) {
+                    row.style.opacity = '0.3';
+                    row.querySelector('.btn-shadcn').disabled = true;
+                    row.querySelector('.btn-shadcn').innerText = 'Karantinada';
+                }
+
+                const svgNode = document.getElementById('svg-node-malicious');
+                if (svgNode) {
+                    svgNode.classList.remove('alert');
+                    svgNode.classList.add('active');
+                    document.getElementById('svg-node-malicious-pid').innerText = 'PID: Karantina';
+                }
+
+                // Add to Vault list
+                const container = document.getElementById('quarantine-items-container');
+                const emptyMsg = document.getElementById('quarantine-empty-msg');
+                if (emptyMsg) emptyMsg.style.display = 'none';
+
+                container.insertAdjacentHTML('afterbegin', `
+                    <div class="quarantine-item" id="q-lsass">
+                        <div class="quarantine-item-info">
+                            <span class="quarantine-name">mimikatz.exe</span>
+                            <span class="quarantine-hash">SHA256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
+                            <span class="quarantine-path">Orijinal Yol: C:\\Windows\\Temp\\mimikatz.exe</span>
+                        </div>
+                        <button class="btn-shadcn outline btn-sm" onclick="restoreQuarantine('q-lsass', 'lsass')">Geri Yükle</button>
+                    </div>
+                `);
+
+                pendingAlertsCount -= 1;
+                document.getElementById('tot-threats-val').innerText = pendingAlertsCount;
+                document.getElementById('threats-badge').innerText = `${pendingAlertsCount} Aktif Tehdit`;
+                document.getElementById('risk-score-ui').innerText = '30/100';
+                document.getElementById('risk-score-ui').style.color = 'var(--primary)';
+
+                if (pendingAlertsCount === 0) {
+                    document.getElementById('threats-badge').className = 'badge-shadcn green';
+                }
+            } else if (selectedAlertForAction === 'powershell') {
+                const row = document.getElementById('alert-row-powershell');
+                if (row) {
+                    row.style.opacity = '0.3';
+                    row.querySelector('.btn-shadcn').disabled = true;
+                    row.querySelector('.btn-shadcn').innerText = 'Kısıtlandı';
+                }
+
+                pendingAlertsCount -= 1;
+                document.getElementById('tot-threats-val').innerText = pendingAlertsCount;
+                document.getElementById('threats-badge').innerText = `${pendingAlertsCount} Aktif Tehdit`;
+
+                if (pendingAlertsCount === 0) {
+                    document.getElementById('threats-badge').className = 'badge-shadcn green';
+                }
+            }
+        }
+
+        // Restore quarantine vault item back to active
+        function restoreQuarantine(elemId, type) {
+            document.getElementById(elemId).remove();
+            
+            const container = document.getElementById('quarantine-items-container');
+            if (container.children.length === 0 || (container.children.length === 1 && container.children[0].id === 'quarantine-empty-msg')) {
+                document.getElementById('quarantine-empty-msg').style.display = 'block';
+            }
+
+            if (type === 'lsass') {
+                const row = document.getElementById('alert-row-lsass');
+                if (row) {
+                    row.style.opacity = '1';
+                    row.querySelector('.btn-shadcn').disabled = false;
+                    row.querySelector('.btn-shadcn').innerText = 'Karantinaya Al';
+                }
+
+                const svgNode = document.getElementById('svg-node-malicious');
+                if (svgNode) {
+                    svgNode.classList.remove('active');
+                    svgNode.classList.add('alert');
+                    document.getElementById('svg-node-malicious-pid').innerText = 'PID: 9021';
+                }
+
+                pendingAlertsCount += 1;
+                document.getElementById('tot-threats-val').innerText = pendingAlertsCount;
+                document.getElementById('threats-badge').innerText = `${pendingAlertsCount} Aktif Tehdit`;
+                document.getElementById('threats-badge').className = 'badge-shadcn red';
+                document.getElementById('risk-score-ui').innerText = '65/100';
+                document.getElementById('risk-score-ui').style.color = 'var(--destructive)';
+            }
+        }
+
+        function ignoreAlertItem(alertId) {
+            const rowMap = {
+                'alert-item-lsass': 'alert-row-lsass',
+                'alert-item-powershell': 'alert-row-powershell'
+            };
+            const row = document.getElementById(rowMap[alertId]);
+            if (row) {
+                row.remove();
+                pendingAlertsCount -= 1;
+                document.getElementById('tot-threats-val').innerText = pendingAlertsCount;
+                document.getElementById('threats-badge').innerText = `${pendingAlertsCount} Aktif Tehdit`;
+                if (pendingAlertsCount === 0) {
+                    document.getElementById('threats-badge').className = 'badge-shadcn green';
+                }
+            }
+        }
+
+        // Charts Ingest rate
+        let throughputChart = null;
+        function initChart() {
+            const ctx = document.getElementById('throughputChart');
+            if (!ctx) return;
+
+            if (throughputChart) {
+                throughputChart.destroy();
+            }
+
+            throughputChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: Array(10).fill(''),
+                    datasets: [{
+                        data: [110, 130, 95, 120, 240, 180, 140, 205, 300, 260],
+                        borderColor: '#22c55e',
+                        borderWidth: 1.5,
+                        backgroundColor: 'rgba(34, 197, 94, 0.02)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { 
+                            grid: { color: 'rgba(255, 255, 255, 0.02)' },
+                            ticks: { color: '#71717a', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // System update metrics
+        setInterval(() => {
+            const cpuVal = (Math.random() * 1.6 + 0.4).toFixed(1) + '%';
+            document.getElementById('cpu-stat').innerText = cpuVal;
+
+            const ramVal = (42.0 + Math.random() * 0.9).toFixed(1) + ' MB';
+            document.getElementById('ram-meter').innerText = ramVal;
+
+            // Ingestion activity graph simulation
+            const graph = document.getElementById('mock-graph');
+            if (graph && graph.children.length > 0) {
+                // Randomize heights slightly
+                Array.from(graph.children).forEach(bar => {
+                    const h = Math.max(30, Math.floor(Math.random() * 70) + 30);
+                    bar.style.height = `${h}px`;
+                });
+            }
+
+            if (throughputChart) {
+                const nextVal = Math.floor(Math.random() * 100) + 120;
+                throughputChart.data.datasets[0].data.shift();
+                throughputChart.data.datasets[0].data.push(nextVal);
+                throughputChart.update();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
