@@ -50,3 +50,48 @@ impl EtwProcessRecord {
         self
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EtwNetworkEventKind {
+    TcpConnect,
+    TcpAccept,
+    TcpDisconnect,
+    UdpSend,
+    UdpReceive,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EtwNetworkRecord {
+    pub event_kind: EtwNetworkEventKind,
+    pub timestamp: Timestamp,
+    pub process_id: u32,
+    pub remote_ip: String,
+    pub remote_port: u16,
+    pub local_port: u16,
+    pub is_ipv6: bool,
+}
+
+impl EtwNetworkRecord {
+    pub fn new(event_kind: EtwNetworkEventKind, timestamp: Timestamp, process_id: u32, remote_ip: impl Into<String>, remote_port: u16, local_port: u16) -> Self {
+        Self {
+            event_kind,
+            timestamp,
+            process_id,
+            remote_ip: remote_ip.into(),
+            remote_port,
+            local_port,
+            is_ipv6: false,
+        }
+    }
+
+    pub fn with_ipv6(mut self, is_ipv6: bool) -> Self {
+        self.is_ipv6 = is_ipv6;
+        self
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EtwRecord {
+    Process(EtwProcessRecord),
+    Network(EtwNetworkRecord),
+}

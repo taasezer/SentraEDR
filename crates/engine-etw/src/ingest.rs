@@ -1,5 +1,5 @@
 use crate::metrics::{EtwIngestionReport, EtwIngestionStats};
-use crate::normalize::normalize_process_record;
+use crate::normalize::normalize_etw_record;
 use crate::source::EtwEventSource;
 use shared_ipc::BoundedSender;
 use shared_models::NormalizedTelemetryEvent;
@@ -31,7 +31,7 @@ where
             };
 
             stats.received += 1;
-            let event = normalize_process_record(record);
+            let event = normalize_etw_record(record);
             match self.sender.try_send(event) {
                 Ok(()) => stats.normalized += 1,
                 Err(_) => stats.dropped += 1,

@@ -50,9 +50,26 @@ async fn main() {
 
                             // Let's pretend every new process start is a behavioral signal
                             // to make the demo lively
-                            use engine_etw::EtwProcessEventKind;
-                            if record.event_kind == EtwProcessEventKind::Start {
-                                dash.telemetry.behavioral_signals += 1;
+                            use engine_etw::{EtwProcessEventKind, EtwNetworkEventKind, EtwRecord};
+                            match record {
+                                EtwRecord::Process(p) => {
+                                    if p.event_kind == EtwProcessEventKind::Start {
+                                        dash.telemetry.behavioral_signals += 1;
+                                    }
+                                }
+                                EtwRecord::Network(n) => {
+                                    if n.event_kind == EtwNetworkEventKind::TcpConnect {
+                                        dash.telemetry.behavioral_signals += 1; // Also treat as behavioral for demo
+                                        
+                                        // Push a timeline event for Network Connect
+                                        use sentra_ui::{TimelineEntry, TimelineKind};
+                                        dash.timeline.push(TimelineEntry {
+                                            kind: TimelineKind::TelemetryUpdated,
+                                            title: format!("TCP Connect to {}:{}", n.remote_ip, n.remote_port),
+                                            timestamp: n.timestamp,
+                                        });
+                                    }
+                                }
                             }
 
                             dash.telemetry.last_updated = Timestamp::now();

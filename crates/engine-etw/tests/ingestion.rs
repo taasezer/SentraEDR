@@ -1,20 +1,20 @@
-use engine_etw::{EtwIngestor, EtwProcessEventKind, EtwProcessRecord, SyntheticEtwSource};
+use engine_etw::{EtwIngestor, EtwProcessEventKind, EtwProcessRecord, EtwRecord, SyntheticEtwSource};
 use shared_ipc::bounded_channel;
 use shared_models::{HealthStatus, NormalizedTelemetryEvent, TelemetryAction, Timestamp};
 
 #[test]
 fn synthetic_source_drains_into_bounded_queue() {
     let records = vec![
-        EtwProcessRecord::new(
+        EtwRecord::Process(EtwProcessRecord::new(
             EtwProcessEventKind::Start,
             Timestamp::parse_rfc3339("2026-06-27T09:00:00Z").unwrap(),
             42,
-        ),
-        EtwProcessRecord::new(
+        )),
+        EtwRecord::Process(EtwProcessRecord::new(
             EtwProcessEventKind::Exit,
             Timestamp::parse_rfc3339("2026-06-27T09:01:00Z").unwrap(),
             42,
-        ),
+        )),
     ];
     let source = SyntheticEtwSource::from_records(records);
     let (sender, mut receiver) = bounded_channel::<NormalizedTelemetryEvent>("etw-process", 4);
@@ -35,16 +35,16 @@ fn synthetic_source_drains_into_bounded_queue() {
 #[test]
 fn queue_pressure_degrades_component_health() {
     let records = vec![
-        EtwProcessRecord::new(
+        EtwRecord::Process(EtwProcessRecord::new(
             EtwProcessEventKind::Start,
             Timestamp::parse_rfc3339("2026-06-27T09:00:00Z").unwrap(),
             1,
-        ),
-        EtwProcessRecord::new(
+        )),
+        EtwRecord::Process(EtwProcessRecord::new(
             EtwProcessEventKind::Start,
             Timestamp::parse_rfc3339("2026-06-27T09:00:01Z").unwrap(),
             2,
-        ),
+        )),
     ];
     let source = SyntheticEtwSource::from_records(records);
     let (sender, _receiver) = bounded_channel::<NormalizedTelemetryEvent>("etw-process", 1);

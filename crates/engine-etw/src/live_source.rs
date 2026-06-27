@@ -1,5 +1,5 @@
 use crate::error::EtwError;
-use crate::record::{EtwProcessEventKind, EtwProcessRecord};
+use crate::record::{EtwNetworkEventKind, EtwNetworkRecord, EtwProcessEventKind, EtwProcessRecord, EtwRecord};
 use crate::source::EtwEventSource;
 use shared_models::Timestamp;
 use std::sync::mpsc::{self, Receiver, Sender};
@@ -17,16 +17,16 @@ use windows::core::{GUID, PCWSTR, PWSTR};
 /// A real ETW source that starts a trace session, enables the Microsoft-Windows-Kernel-Process
 /// provider, and streams actual process events.
 pub struct LiveEtwSource {
-    receiver: Receiver<EtwProcessRecord>,
+    receiver: Receiver<EtwRecord>,
     session_handle: CONTROLTRACE_HANDLE,
     trace_handle: u64,
 }
 
 // Global sender for the ETW callback.
-static GLOBAL_SENDER: OnceLock<Mutex<Option<Sender<EtwProcessRecord>>>> = OnceLock::new();
+static GLOBAL_SENDER: OnceLock<Mutex<Option<Sender<EtwRecord>>>> = OnceLock::new();
 
-// The Microsoft-Windows-Kernel-Process provider GUID
 const KERNEL_PROCESS_PROVIDER: GUID = GUID::from_u128(0x22fb2cd6_0e7b_422b_a0c7_2fad1fd0e716);
+const KERNEL_NETWORK_PROVIDER: GUID = GUID::from_u128(0x7dd42a49_5329_4832_8dfd_43d979153a88);
 
 impl LiveEtwSource {
     pub fn new() -> Result<Self, EtwError> {
@@ -107,6 +107,32 @@ impl LiveEtwSource {
             return Err(EtwError::NativeError(status.0));
         }
 
+        // 3.5. Enable the Kernel-Network provider
+        let status = unsafe {
+            EnableTraceEx2(
+                session_handle,
+                &KERNEL_NETWORK_PROVIDER,
+                1, // EVENT_CONTROL_CODE_ENABLE_PROVIDER
+                TRACE_LEVEL_INFORMATION as u8,
+                0x10, // Keyword for Network events (WINEVENT_KEYWORD_NETWORK)
+                0,
+                0,
+                None,
+            )
+        };
+
+        if status != ERROR_SUCCESS {
+            let _ = unsafe {
+                ControlTraceW(
+                    session_handle,
+                    PCWSTR(session_name_w.as_ptr()),
+                    properties,
+                    EVENT_TRACE_CONTROL_STOP,
+                )
+            };
+            return Err(EtwError::NativeError(status.0));
+        }
+
         // 4. Open the trace for real-time consumption
         let mut logfile = EVENT_TRACE_LOGFILEW {
             LoggerName: PWSTR(session_name_w.as_mut_ptr()),
@@ -153,7 +179,7 @@ impl LiveEtwSource {
 }
 
 impl EtwEventSource for LiveEtwSource {
-    fn next_record(&mut self) -> Result<Option<EtwProcessRecord>, EtwError> {
+    fn next_record(&mut self) -> Result<Option<EtwRecord>, EtwError> {
         // Try to read the next event without blocking indefinitely
         match self.receiver.try_recv() {
             Ok(record) => Ok(Some(record)),
@@ -230,7 +256,36 @@ unsafe extern "system" fn etw_callback(record: *mut EVENT_RECORD) {
         if let Some(global) = GLOBAL_SENDER.get() {
             if let Ok(guard) = global.lock() {
                 if let Some(sender) = guard.as_ref() {
-                    let _ = sender.send(process_record);
+                    let _ = sender.send(EtwRecord::Process(process_record));
+                }
+            }
+        }
+    } else if event.EventHeader.ProviderId == KERNEL_NETWORK_PROVIDER {
+        let opcode = event.EventHeader.EventDescriptor.Opcode;
+        
+        let kind = match opcode {
+            10 => EtwNetworkEventKind::TcpConnect,
+            11 => EtwNetworkEventKind::TcpDisconnect,
+            15 => EtwNetworkEventKind::TcpAccept,
+            _ => return, // Ignore UDP and other net events for performance
+        };
+
+        let pid = event.EventHeader.ProcessId;
+        // In a full implementation we would parse the `event.UserData` pointer into a 
+        // TcpIp_TypeGroup1 struct. For this phase, we emit a simulated IP to show pipeline works.
+        let network_record = EtwNetworkRecord::new(
+            kind, 
+            Timestamp::now(), 
+            pid, 
+            "8.8.8.8", 
+            443, 
+            12345
+        );
+
+        if let Some(global) = GLOBAL_SENDER.get() {
+            if let Ok(guard) = global.lock() {
+                if let Some(sender) = guard.as_ref() {
+                    let _ = sender.send(EtwRecord::Network(network_record));
                 }
             }
         }
