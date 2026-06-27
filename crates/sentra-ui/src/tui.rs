@@ -181,10 +181,59 @@ pub async fn run_tui_loop(state: SharedDashboardState) -> io::Result<()> {
         // Poll for input gracefully
         if event::poll(Duration::from_millis(50))? {
             if let Event::Key(key) = event::read()? {
-                if key.kind == KeyEventKind::Press
-                    && (key.code == KeyCode::Char('q') || key.code == KeyCode::Esc)
-                {
-                    break;
+                if key.kind == KeyEventKind::Press {
+                    match key.code {
+                        KeyCode::Char('q') | KeyCode::Esc => break,
+                        KeyCode::Char('k') => {
+                            // Demo: Spawn and Kill process using our Executor
+                            use std::process::Command;
+                            if let Ok(child) = Command::new("notepad.exe").spawn() {
+                                let pid = child.id();
+                                
+                                use engine_remediation::{RemediationPolicy, RemediationEngine, executor::RemediationExecutor};
+                                use shared_models::{Alert, Finding, RemediationAction, RiskLevel, ProcessIdentity, Timestamp};
+
+                                let mut finding = Finding::new(
+                                    Timestamp::now(),
+                                    RiskLevel::Critical,
+                                    100
+                                );
+                                
+                                finding.process = Some(ProcessIdentity {
+                                    process_id: pid,
+                                    parent_process_id: None,
+                                    image_path: None,
+                                    command_line: None,
+                                    user_sid: None,
+                                });
+
+                                let mut alert = Alert::observe_only(
+                                    finding,
+                                    "Simulated finding to test process termination",
+                                );
+                                alert.remediation_eligible = true;
+                                
+                                let policy = RemediationPolicy::approval_required()
+                                    .with_allowed_actions(vec![RemediationAction::KillProcess]);
+                                    
+                                let engine = RemediationEngine::new(policy);
+                                let decision = engine.evaluate(&alert, Timestamp::now());
+                                
+                                if let Some(plan) = decision.plan {
+                                    if RemediationExecutor::execute_plan(&plan, &alert).is_ok() {
+                                        let mut dash = state.write().await;
+                                        use crate::{TimelineEntry, TimelineKind};
+                                        dash.timeline.push(TimelineEntry {
+                                            kind: TimelineKind::ActionQueued,
+                                            title: format!("TERMINATED PROCESS: PID {} (Notepad)", pid),
+                                            timestamp: Timestamp::now(),
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
                 }
             }
         }

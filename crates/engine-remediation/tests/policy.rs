@@ -50,7 +50,12 @@ fn high_risk_eligible_alert_creates_approval_required_plan() {
         RemediationDecisionStatus::WaitingForApproval
     );
     let plan = decision.plan.expect("plan should be present");
-    assert_eq!(plan.steps.len(), 3);
+    assert_eq!(plan.steps.len(), 4);
+    assert!(
+        plan.steps
+            .iter()
+            .any(|step| step.kind == RemediationPlanStepKind::KillProcess)
+    );
     assert!(
         plan.steps
             .iter()
@@ -66,7 +71,7 @@ fn high_risk_eligible_alert_creates_approval_required_plan() {
             .iter()
             .any(|step| step.kind == RemediationPlanStepKind::QuarantineFile)
     );
-    assert_eq!(decision.audit.planned_steps, 3);
+    assert_eq!(decision.audit.planned_steps, 4);
 }
 
 #[test]

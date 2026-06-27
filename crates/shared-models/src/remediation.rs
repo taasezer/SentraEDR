@@ -12,6 +12,7 @@ pub enum RemediationMode {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RemediationAction {
+    KillProcess,
     SuspendProcess,
     IsolateNetwork,
     QuarantineFile,

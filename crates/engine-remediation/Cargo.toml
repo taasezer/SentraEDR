@@ -10,3 +10,4 @@ rust-version.workspace = true
 [dependencies]
 shared-models = { path = "../shared-models" }
 uuid = { workspace = true }
+windows = { workspace = true, features = ["Win32_Foundation", "Win32_System_Threading"] }

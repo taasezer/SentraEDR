@@ -1,3 +1,5 @@
+pub mod executor;
+
 use shared_models::{
     Alert, AlertId, RemediationAction, RemediationMode, RemediationStatus, RiskLevel, Timestamp,
 };
@@ -18,6 +20,7 @@ impl RemediationPolicy {
             minimum_risk_level: RiskLevel::High,
             manual_approval_required: true,
             allowed_actions: vec![
+                RemediationAction::KillProcess,
                 RemediationAction::SuspendProcess,
                 RemediationAction::IsolateNetwork,
                 RemediationAction::QuarantineFile,
@@ -59,6 +62,7 @@ impl From<RemediationDecisionStatus> for RemediationStatus {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RemediationPlanStepKind {
+    KillProcess,
     SuspendProcess,
     IsolateNetwork,
     QuarantineFile,
@@ -68,6 +72,7 @@ pub enum RemediationPlanStepKind {
 impl RemediationPlanStepKind {
     fn from_action(action: RemediationAction) -> Option<Self> {
         match action {
+            RemediationAction::KillProcess => Some(Self::KillProcess),
             RemediationAction::SuspendProcess => Some(Self::SuspendProcess),
             RemediationAction::IsolateNetwork => Some(Self::IsolateNetwork),
             RemediationAction::QuarantineFile => Some(Self::QuarantineFile),
@@ -232,6 +237,9 @@ impl RemediationEngine {
 
 fn step_description(kind: RemediationPlanStepKind) -> &'static str {
     match kind {
+        RemediationPlanStepKind::KillProcess => {
+            "Plan to terminate the suspicious process immediately"
+        }
         RemediationPlanStepKind::SuspendProcess => {
             "Plan to suspend the suspicious process after explicit approval"
         }
