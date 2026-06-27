@@ -43,24 +43,49 @@ Performance notes:
 
 ## Phase 1: Workspace And Architecture Initialization
 
-Status: Planning
+Status: Complete pending user review
 
-Reason:
+Completed:
 
-- User review of Phase 0 design is required before implementation planning.
+- Installed Rust toolchain for this workstation.
+- Initialized Rust workspace root.
+- Added `shared-models` schema crate.
+- Added `shared-ipc` bounded queue primitive.
+- Added `sentra-agent` config and logging foundation.
+- Added architecture dependency validation script.
+- Added Phase 1 report and test results.
 
-Required output:
+Validation:
 
-- Rust workspace.
-- Crate boundaries.
-- Shared schemas.
-- Logging and config foundation.
-- Basic CI/build commands.
-- Documentation consistency checks.
+- `cargo fmt --all -- --check` passed.
+- `cargo clippy --workspace --all-targets -- -D warnings` passed.
+- `cargo test --workspace` passed.
+- `powershell -ExecutionPolicy Bypass -File tools/validate-architecture.ps1` passed.
+- `cargo run -p sentra-agent` initialized the agent foundation in observe-only mode.
 
-Integration impact:
+Architectural impact:
 
-- Phase 1 must encode Phase 0 dependency rules into crate dependencies.
+- Phase 0 dependency direction is represented by crate layout.
+- `shared-models` remains dependency-light.
+- `shared-ipc` depends on `shared-models` only.
+- `sentra-agent` wires foundations without owning detection logic.
+
+Security notes:
+
+- Agent defaults to observe-only mode.
+- No remediation executor exists.
+- No ETW, named-pipe server, Windows service, or UI exists yet.
+
+Performance notes:
+
+- Bounded queue primitive records depth and dropped events.
+- No runtime memory benchmark exists yet.
+
+Compatibility notes:
+
+- The workstation lacked MSVC `link.exe`.
+- Visual Studio Build Tools installation through `winget` exited with code 1602.
+- Phase 1 validation used `stable-x86_64-pc-windows-gnu` through `rust-toolchain.toml`.
 
 ## Phase 2: ETW Telemetry Engine
 
