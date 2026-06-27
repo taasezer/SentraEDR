@@ -1,5 +1,5 @@
 use engine_remediation::{
-    RemediationDecisionStatus, RemediationEngine, RemediationPolicy, RemediationPlan,
+    RemediationDecisionStatus, RemediationEngine, RemediationPlan, RemediationPolicy,
 };
 use shared_models::{Alert, Finding, RiskLevel, Timestamp};
 

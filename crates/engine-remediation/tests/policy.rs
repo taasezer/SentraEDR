@@ -14,7 +14,12 @@ fn observe_only_alert_is_rejected_by_policy() {
 
     assert_eq!(decision.status, RemediationDecisionStatus::RejectedByPolicy);
     assert!(decision.plan.is_none());
-    assert!(decision.audit.rationale.contains("not remediation eligible"));
+    assert!(
+        decision
+            .audit
+            .rationale
+            .contains("not remediation eligible")
+    );
 }
 
 #[test]
@@ -40,7 +45,10 @@ fn high_risk_eligible_alert_creates_approval_required_plan() {
 
     let decision = engine.evaluate(&alert, ts());
 
-    assert_eq!(decision.status, RemediationDecisionStatus::WaitingForApproval);
+    assert_eq!(
+        decision.status,
+        RemediationDecisionStatus::WaitingForApproval
+    );
     let plan = decision.plan.expect("plan should be present");
     assert_eq!(plan.steps.len(), 3);
     assert!(

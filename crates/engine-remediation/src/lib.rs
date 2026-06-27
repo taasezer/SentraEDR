@@ -136,12 +136,20 @@ impl RemediationEngine {
         }
 
         if risk_rank(alert.finding.risk_level) < risk_rank(self.policy.minimum_risk_level) {
-            return self.reject(alert, evaluated_at, "finding risk is below policy threshold");
+            return self.reject(
+                alert,
+                evaluated_at,
+                "finding risk is below policy threshold",
+            );
         }
 
         let steps = self.plan_steps();
         if steps.is_empty() {
-            return self.reject(alert, evaluated_at, "policy has no allowed remediation actions");
+            return self.reject(
+                alert,
+                evaluated_at,
+                "policy has no allowed remediation actions",
+            );
         }
 
         let plan = RemediationPlan {
