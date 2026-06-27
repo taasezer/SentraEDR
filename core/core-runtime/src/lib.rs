@@ -3,3 +3,8 @@ pub mod lifecycle;
 pub mod orchestrator;
 pub mod diagnostics;
 pub mod clock;
+pub mod wiring;
+pub mod bootstrap;
+pub mod watchdog;
+pub mod validation;
+pub mod crash_handler;

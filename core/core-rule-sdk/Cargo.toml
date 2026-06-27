@@ -1,0 +1,13 @@
+[package]
+name = "core-rule-sdk"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+core-runtime = { path = "../core-runtime" }
+core-eventbus = { path = "../core-eventbus" }
+tokio.workspace = true
+tokio-util.workspace = true
+uuid.workspace = true
+thiserror.workspace = true

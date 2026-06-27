@@ -1,0 +1,11 @@
+[package]
+name = "service-host"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+core-runtime = { path = "../core/core-runtime" }
+core-observability = { path = "../core/core-observability" }
+tokio.workspace = true
+windows-service = "0.7"

@@ -13,6 +13,9 @@ members = [
     "core/core-eventbus",
     "core/core-config",
     "core/core-observability",
+    "core/core-testkit",
+    "core/core-rule-sdk",
+    "service-host",
     "infrastructure/infrastructure-storage",
     "infrastructure/infrastructure-communication"
 ]
