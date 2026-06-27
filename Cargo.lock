@@ -349,6 +349,7 @@ name = "sentra-agent"
 version = "0.1.0"
 dependencies = [
  "engine-etw",
+ "engine-persistence",
  "engine-process",
  "serde",
  "shared-ipc",
