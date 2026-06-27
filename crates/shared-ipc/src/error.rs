@@ -13,4 +13,13 @@ pub enum IpcError {
 
     #[error("message kind '{kind}' does not match payload '{payload}'")]
     MessageKindPayloadMismatch { kind: String, payload: String },
+
+    #[error("frame payload length {length} exceeds maximum {max}")]
+    FrameTooLarge { length: usize, max: usize },
+
+    #[error("incomplete frame: expected {expected} bytes, got {actual}")]
+    IncompleteFrame { expected: usize, actual: usize },
+
+    #[error("serialization error: {0}")]
+    Serialization(String),
 }
