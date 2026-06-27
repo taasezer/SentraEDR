@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - Omer
+  pull_request:
+
+jobs:
+  quality-gates:
+    name: Quality Gates
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable-x86_64-pc-windows-gnu
+          components: rustfmt, clippy
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace
+
+      - name: Architecture Validation
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File tools\validate-architecture.ps1
+
+      - name: Agent Dry Run
+        run: cargo run -p sentra-agent
