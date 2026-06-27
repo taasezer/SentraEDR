@@ -313,11 +313,29 @@ Architectural impact:
 
 ## Phase 9: UI Dashboard
 
-Status: Deferred
+Status: Complete pending user review
 
-Reason:
+Completed:
 
-- Requires stable agent IPC and alert schemas.
+- Added `sentra-ui` crate.
+- Added dashboard state model.
+- Added alert card projection from shared alerts.
+- Added risk summary aggregation.
+- Added timeline entry model and timestamp ordering.
+- Added pending remediation action review cards.
+- Added architecture validation rules for `sentra-ui`.
+
+Validation:
+
+- Dashboard tests cover risk summary counts, score sorting, timeline ordering, and pending action queue state.
+- Final Phase 9 command results are recorded in `TEST_RESULTS/phase-9.md`.
+
+Architectural impact:
+
+- `sentra-ui` depends only on `shared-models`.
+- `sentra-ui` does not import agent, IPC, or engine crates.
+- Phase 9 prepares UI-ready state only.
+- Browser rendering, local IPC streaming, authentication, user approval execution, and live dashboard workflows remain deferred.
 
 ## Phase 10: Testing Infrastructure
 

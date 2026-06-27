@@ -21,7 +21,10 @@ $forbidden = @(
     @{ Crate = "engine-remediation"; Pattern = 'path\s*=\s*"\.\./engine-'; Message = "engine-remediation must not depend on peer engine crates" },
     @{ Crate = "engine-memory"; Pattern = 'path\s*=\s*"\.\./(sentra-agent|sentra-ui)"'; Message = "engine-memory must not depend on agent or UI crates" },
     @{ Crate = "engine-memory"; Pattern = 'path\s*=\s*"\.\./engine-'; Message = "engine-memory must not depend on peer engine crates" },
-    @{ Crate = "sentra-agent"; Pattern = 'path\s*=\s*"\.\./sentra-ui"'; Message = "sentra-agent must not depend on UI crates" }
+    @{ Crate = "sentra-agent"; Pattern = 'path\s*=\s*"\.\./sentra-ui"'; Message = "sentra-agent must not depend on UI crates" },
+    @{ Crate = "sentra-ui"; Pattern = 'path\s*=\s*"\.\./sentra-agent"'; Message = "sentra-ui must not depend on sentra-agent" },
+    @{ Crate = "sentra-ui"; Pattern = 'path\s*=\s*"\.\./shared-ipc"'; Message = "sentra-ui must not depend on IPC directly in Phase 9" },
+    @{ Crate = "sentra-ui"; Pattern = 'path\s*=\s*"\.\./engine-'; Message = "sentra-ui must not depend on engine crates" }
 )
 
 $violations = New-Object System.Collections.Generic.List[string]

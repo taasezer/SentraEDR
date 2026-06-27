@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 8
+Phase: 9
 
 ## Purpose
 
@@ -96,6 +96,8 @@ The flow is intentionally one-directional for security decisions. Detection may 
 `sentra-ui`
 
 - Owns dashboard state, alert review, timeline display, and explicit user action flows.
+- Phase 9 implements dashboard state preparation, alert cards, risk summaries, timeline entries, and pending action review cards.
+- Does not render a live web UI, connect IPC, approve remediation, execute actions, or import agent and engine crates.
 - Must not import engine internals.
 
 ## Dependency Rules
@@ -196,3 +198,7 @@ Workspace foundations are implemented. `shared-models`, `shared-ipc`, and `sentr
 ## Phase 8 Status
 
 `engine-memory` now parses normalized memory telemetry metadata and emits preliminary observe-only signals for remote thread creation, executable private memory, unsigned module loads, suspicious section mapping, and executable memory protection changes. This phase is metadata-only; real memory scanning, process handle access, memory reads, dumps, kernel drivers, injection, remediation, final alerting, and UI streaming remain deferred.
+
+## Phase 9 Status
+
+`sentra-ui` now prepares deterministic dashboard state from shared alert and remediation review schemas. It creates alert cards, risk summaries, timeline entries, and pending action review cards without importing agent or engine crates. Browser rendering, local IPC streaming, authentication, user approval workflows, and action execution remain deferred.
