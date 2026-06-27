@@ -11,6 +11,7 @@ members = [
     "crates/sentra-remediation",
     "crates/sentra-cli",
     "crates/sentra-service",
+    "crates/sentra-ui/src-tauri"
 ]
 
 [workspace.package]
