@@ -1,7 +1,7 @@
 # SentraEDR Phase 0 Design
 
 Date: 2026-06-27
-Status: Draft for user review
+Status: Approved by user on 2026-06-27
 Scope: Research, architecture, threat model, telemetry model, memory model, IPC model, and implementation roadmap.
 
 ## Objective
