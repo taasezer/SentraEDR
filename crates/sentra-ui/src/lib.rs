@@ -3,6 +3,7 @@ pub mod alert_card;
 pub mod dashboard;
 pub mod demo_html;
 pub mod live_telemetry;
+pub mod server;
 pub mod timeline;
 
 pub use action_queue::ActionReviewCard;
@@ -12,4 +13,5 @@ pub use demo_html::render_dashboard_html;
 pub use live_telemetry::{
     IpcTelemetryHealth, LiveTelemetryCounters, LiveTelemetryPanel, LiveTelemetrySnapshot,
 };
+pub use server::{SharedDashboardState, dashboard_router};
 pub use timeline::{TimelineEntry, TimelineKind};

@@ -24,6 +24,7 @@ rust-version = "1.85"
 version = "0.1.0"
 
 [workspace.dependencies]
+axum = "0.8.1"
 chrono = { version = "0.4.45", default-features = false, features = ["clock", "serde", "std"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
@@ -34,3 +35,10 @@ toml = "1.1.2"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }
 uuid = { version = "1.23.4", features = ["serde", "v4"] }
+windows = { version = "0.62.2", features = [
+    "Win32_System_Diagnostics_Etw",
+    "Win32_Foundation",
+    "Win32_System_Threading",
+    "Win32_System_Time",
+    "Win32_Security"
+] }

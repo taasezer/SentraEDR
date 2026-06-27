@@ -11,3 +11,4 @@ version.workspace = true
 shared-models = { path = "../shared-models" }
 shared-ipc = { path = "../shared-ipc" }
 thiserror.workspace = true
+windows.workspace = true

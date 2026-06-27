@@ -8,4 +8,10 @@ pub enum EtwError {
 
     #[error("ETW queue delivery failed")]
     QueueDelivery(#[from] IpcError),
+
+    #[error("Windows API Native Error: {0}")]
+    NativeError(u32),
+
+    #[error("Malformed ETW Event: {0}")]
+    MalformedEvent(String),
 }

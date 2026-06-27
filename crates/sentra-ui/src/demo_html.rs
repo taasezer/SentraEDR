@@ -19,7 +19,30 @@ pub fn render_dashboard_html(dashboard: &DashboardState) -> String {
     render_lower_grid(&mut html, dashboard);
     render_footer(&mut html, dashboard);
 
-    html.push_str("</main></body></html>");
+    html.push_str("</main>");
+
+    // JS to auto-refresh the main content every 2 seconds without full page reload
+    html.push_str(
+        r#"<script>
+        setInterval(async () => {
+            try {
+                let res = await fetch("/");
+                if (!res.ok) return;
+                let text = await res.text();
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(text, "text/html");
+                let newMain = doc.querySelector("main");
+                if (newMain) {
+                    document.querySelector("main").innerHTML = newMain.innerHTML;
+                }
+            } catch (err) {
+                console.error("Live telemetry fetch failed", err);
+            }
+        }, 2000);
+        </script>"#,
+    );
+
+    html.push_str("</body></html>");
     html
 }
 
