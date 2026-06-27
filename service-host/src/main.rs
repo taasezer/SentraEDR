@@ -23,7 +23,9 @@ async fn main() {
     println!("Tokio Reactor initialized. Waiting for normalized events from ETW thread...");
 
     let rules: Vec<Box<dyn engine_detection::rules::Rule>> = vec![
-        Box::new(engine_detection::rules::SuspiciousProcessRule),
+        Box::new(engine_detection::rules::LsassDumpRule),
+        Box::new(engine_detection::rules::ReverseShellRule),
+        Box::new(engine_detection::rules::RansomwareBehaviorRule),
     ];
     let mut detection_engine = engine_detection::pipeline::DetectionPipeline::new(rules);
 
