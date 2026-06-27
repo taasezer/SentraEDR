@@ -89,11 +89,22 @@ Compatibility notes:
 
 ## Phase 2: ETW Telemetry Engine
 
-Status: Deferred
+Status: Design in review
 
 Reason:
 
-- Requires Phase 1 workspace and shared event schemas.
+- Phase 1 workspace and shared event schemas are complete.
+- Phase 2 design narrows ETW ingestion to process start and process exit events.
+- Implementation planning requires user review of the Phase 2 design spec.
+
+Required output:
+
+- `engine-etw` crate.
+- Synthetic process event source for deterministic tests.
+- Process lifecycle normalizer.
+- Bounded queue ingestion runner.
+- Queue pressure and health metrics.
+- Phase 2 report and test results.
 
 ## Phase 3: Process Monitoring Engine
 
