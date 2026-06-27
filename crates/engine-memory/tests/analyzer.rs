@@ -23,7 +23,8 @@ fn remote_thread_metadata_emits_high_signal() {
 #[test]
 fn executable_private_memory_emits_high_signal() {
     let mut analyzer = MemoryAnalyzer::default();
-    let report = analyzer.analyze(memory_event("executable_private_memory").with_confidence_hint(75));
+    let report =
+        analyzer.analyze(memory_event("executable_private_memory").with_confidence_hint(75));
 
     assert!(
         report

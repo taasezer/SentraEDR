@@ -7,9 +7,11 @@ use shared_models::{
 pub fn run_synthetic_memory_analysis_dry_run() -> MemoryAnalysisReport {
     let mut analyzer = MemoryAnalyzer::default();
     let mut report = analyzer.analyze(memory_event("remote_thread_created"));
-    report
-        .signals
-        .extend(analyzer.analyze(memory_event("executable_private_memory")).signals);
+    report.signals.extend(
+        analyzer
+            .analyze(memory_event("executable_private_memory"))
+            .signals,
+    );
     let final_report = analyzer.analyze(memory_event("protection_changed"));
     report.signals.extend(final_report.signals);
     report.stats = final_report.stats;

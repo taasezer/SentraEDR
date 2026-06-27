@@ -1,6 +1,4 @@
-use shared_models::{
-    NormalizedTelemetryEvent, TelemetryAction, TelemetryEventId, Timestamp,
-};
+use shared_models::{NormalizedTelemetryEvent, TelemetryAction, TelemetryEventId, Timestamp};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MemoryEventKind {
@@ -65,14 +63,10 @@ impl MemoryEvent {
 fn classify_kind(value: &str) -> MemoryEventKind {
     match value.to_ascii_lowercase().as_str() {
         "remote_thread_created" | "remote_thread" => MemoryEventKind::RemoteThreadCreated,
-        "executable_private_memory" | "private_execute" => {
-            MemoryEventKind::ExecutablePrivateMemory
-        }
+        "executable_private_memory" | "private_execute" => MemoryEventKind::ExecutablePrivateMemory,
         "unsigned_module_loaded" | "unsigned_module" => MemoryEventKind::UnsignedModuleLoaded,
         "section_mapping" | "mapped_section" => MemoryEventKind::SectionMapping,
-        "protection_changed" | "memory_protection_changed" => {
-            MemoryEventKind::ProtectionChanged
-        }
+        "protection_changed" | "memory_protection_changed" => MemoryEventKind::ProtectionChanged,
         _ => MemoryEventKind::Unknown,
     }
 }
