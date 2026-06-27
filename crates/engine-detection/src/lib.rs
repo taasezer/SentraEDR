@@ -1,4 +1,6 @@
-use shared_models::{Alert, Finding, ProcessIdentity, RiskLevel, Signal, TelemetryEventId, Timestamp};
+use shared_models::{
+    Alert, Finding, ProcessIdentity, RiskLevel, Signal, TelemetryEventId, Timestamp,
+};
 use std::collections::BTreeSet;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

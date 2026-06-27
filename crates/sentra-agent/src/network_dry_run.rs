@@ -7,9 +7,24 @@ use shared_models::{
 pub fn run_synthetic_network_analysis_dry_run() -> NetworkAnalysisReport {
     let mut analyzer = NetworkAnalyzer::default();
 
-    analyzer.analyze(network_event("198.51.100.7", "4444", Some("node.duckdns.org"), "2026-06-27T09:04:00Z"));
-    analyzer.analyze(network_event("198.51.100.7", "4444", Some("node.duckdns.org"), "2026-06-27T09:05:00Z"));
-    analyzer.analyze(network_event("198.51.100.7", "4444", Some("node.duckdns.org"), "2026-06-27T09:06:00Z"))
+    analyzer.analyze(network_event(
+        "198.51.100.7",
+        "4444",
+        Some("node.duckdns.org"),
+        "2026-06-27T09:04:00Z",
+    ));
+    analyzer.analyze(network_event(
+        "198.51.100.7",
+        "4444",
+        Some("node.duckdns.org"),
+        "2026-06-27T09:05:00Z",
+    ));
+    analyzer.analyze(network_event(
+        "198.51.100.7",
+        "4444",
+        Some("node.duckdns.org"),
+        "2026-06-27T09:06:00Z",
+    ))
 }
 
 fn network_event(

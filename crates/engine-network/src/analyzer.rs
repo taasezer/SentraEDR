@@ -66,16 +66,19 @@ impl NetworkAnalyzer {
 
     fn update_history(&mut self, key: String, event: &NetworkEvent) -> &DestinationHistory {
         let current_seconds = timestamp_seconds(&event.observed_at);
-        let entry = self.history.entry(key.clone()).or_insert(DestinationHistory {
-            destination: key,
-            remote_ip: event.remote_ip.clone(),
-            remote_port: event.remote_port,
-            first_observed: event.observed_at.clone(),
-            last_observed: event.observed_at.clone(),
-            observation_count: 0,
-            last_interval_seconds: None,
-            previous_interval_seconds: None,
-        });
+        let entry = self
+            .history
+            .entry(key.clone())
+            .or_insert(DestinationHistory {
+                destination: key,
+                remote_ip: event.remote_ip.clone(),
+                remote_port: event.remote_port,
+                first_observed: event.observed_at.clone(),
+                last_observed: event.observed_at.clone(),
+                observation_count: 0,
+                last_interval_seconds: None,
+                previous_interval_seconds: None,
+            });
 
         if entry.observation_count > 0 {
             let previous_seconds = timestamp_seconds(&entry.last_observed);
@@ -90,8 +93,17 @@ impl NetworkAnalyzer {
 
 fn timestamp_seconds(timestamp: &Timestamp) -> i64 {
     let value = timestamp.to_rfc3339();
-    let hour = value.get(11..13).and_then(|v| v.parse::<i64>().ok()).unwrap_or(0);
-    let minute = value.get(14..16).and_then(|v| v.parse::<i64>().ok()).unwrap_or(0);
-    let second = value.get(17..19).and_then(|v| v.parse::<i64>().ok()).unwrap_or(0);
+    let hour = value
+        .get(11..13)
+        .and_then(|v| v.parse::<i64>().ok())
+        .unwrap_or(0);
+    let minute = value
+        .get(14..16)
+        .and_then(|v| v.parse::<i64>().ok())
+        .unwrap_or(0);
+    let second = value
+        .get(17..19)
+        .and_then(|v| v.parse::<i64>().ok())
+        .unwrap_or(0);
     hour * 3600 + minute * 60 + second
 }

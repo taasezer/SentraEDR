@@ -1,4 +1,6 @@
-use engine_detection::{DetectionAnalyzer, DetectionReport, DetectionSignal, SignalFamily, SignalSeverity};
+use engine_detection::{
+    DetectionAnalyzer, DetectionReport, DetectionSignal, SignalFamily, SignalSeverity,
+};
 use shared_models::Timestamp;
 
 pub fn run_synthetic_detection_dry_run() -> DetectionReport {

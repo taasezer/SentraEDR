@@ -13,9 +13,21 @@ fn signal(name: &str, family: SignalFamily, severity: SignalSeverity) -> Detecti
 fn multi_family_signals_emit_high_risk_finding_and_observe_only_alert() {
     let mut analyzer = DetectionAnalyzer::default();
     let report = analyzer.analyze(vec![
-        signal("powershell_encoded_command", SignalFamily::Process, SignalSeverity::Medium),
-        signal("registry_run_key_persistence", SignalFamily::Persistence, SignalSeverity::High),
-        signal("beacon_interval_candidate", SignalFamily::Network, SignalSeverity::High),
+        signal(
+            "powershell_encoded_command",
+            SignalFamily::Process,
+            SignalSeverity::Medium,
+        ),
+        signal(
+            "registry_run_key_persistence",
+            SignalFamily::Persistence,
+            SignalSeverity::High,
+        ),
+        signal(
+            "beacon_interval_candidate",
+            SignalFamily::Network,
+            SignalSeverity::High,
+        ),
     ]);
 
     assert_eq!(report.stats.signals_observed, 3);
@@ -44,8 +56,12 @@ fn single_medium_signal_emits_low_risk_finding() {
 fn low_confidence_signal_marks_telemetry_uncertainty() {
     let mut analyzer = DetectionAnalyzer::default();
     let report = analyzer.analyze(vec![
-        signal("service_persistence", SignalFamily::Persistence, SignalSeverity::High)
-            .with_confidence(40),
+        signal(
+            "service_persistence",
+            SignalFamily::Persistence,
+            SignalSeverity::High,
+        )
+        .with_confidence(40),
     ]);
 
     assert!(report.findings[0].telemetry_uncertainty);
