@@ -1,0 +1,19 @@
+[package]
+name = "engine-persistence"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+shared-models.workspace = true
+tokio.workspace = true
+uuid.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+
+[dependencies.windows]
+workspace = true
+features = [
+    "Win32_Foundation",
+    "Win32_System_Registry"
+]
