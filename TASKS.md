@@ -339,8 +339,27 @@ Architectural impact:
 
 ## Phase 10: Testing Infrastructure
 
-Status: Deferred
+Status: Complete pending user review
 
-Reason:
+Completed:
 
-- Requires executable agent components and VM test environment.
+- Added `testing-infra` crate.
+- Added safe test scenario model.
+- Added scenario safety levels.
+- Added scenario kinds for telemetry, process, persistence, network, detection, remediation, memory, UI, and unsafe malware execution markers.
+- Added synthetic default scenario catalog for phases 2 through 9.
+- Added unsafe scenario rejection.
+- Added phase coverage matrix.
+- Added coverage report with phase, scenario, and MITRE tag counts.
+- Added architecture validation rules for `testing-infra`.
+
+Validation:
+
+- Catalog tests cover synthetic-only defaults, unsafe scenario rejection, implemented phase coverage, missing phase reporting, and coverage report aggregation.
+- Final Phase 10 command results are recorded in `TEST_RESULTS/phase-10.md`.
+
+Architectural impact:
+
+- `testing-infra` has no dependency on agent, UI, IPC, or engine crates.
+- Phase 10 is planning and validation metadata only.
+- Live malware, Atomic Red Team execution, VM orchestration, IPC fuzzing, remediation execution, and host mutation remain deferred.

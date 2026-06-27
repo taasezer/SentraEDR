@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 9
+Phase: 10
 
 ## Purpose
 
@@ -99,6 +99,12 @@ The flow is intentionally one-directional for security decisions. Detection may 
 - Phase 9 implements dashboard state preparation, alert cards, risk summaries, timeline entries, and pending action review cards.
 - Does not render a live web UI, connect IPC, approve remediation, execute actions, or import agent and engine crates.
 - Must not import engine internals.
+
+`testing-infra`
+
+- Owns safe test scenario cataloging, phase coverage matrices, and validation planning.
+- Phase 10 implements synthetic-only scenario descriptors and coverage reporting for phases 2 through 9.
+- Does not execute malware, Atomic Red Team commands, VM orchestration, remediation, IPC fuzzing, host mutation, or engine internals.
 
 ## Dependency Rules
 
@@ -202,3 +208,7 @@ Workspace foundations are implemented. `shared-models`, `shared-ipc`, and `sentr
 ## Phase 9 Status
 
 `sentra-ui` now prepares deterministic dashboard state from shared alert and remediation review schemas. It creates alert cards, risk summaries, timeline entries, and pending action review cards without importing agent or engine crates. Browser rendering, local IPC streaming, authentication, user approval workflows, and action execution remain deferred.
+
+## Phase 10 Status
+
+`testing-infra` now defines a synthetic-only scenario catalog and phase coverage matrix for implemented phases. Unsafe scenarios are rejected before entering the catalog. This phase does not run malware, Atomic Red Team, VM orchestration, host mutation, live IPC fuzzing, remediation, or engine internals.
