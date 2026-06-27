@@ -11,6 +11,7 @@ members = [
     "crates/engine-remediation",
     "crates/engine-memory",
     "crates/sentra-agent",
+    "crates/sentra-ui",
 ]
 
 [workspace.package]
