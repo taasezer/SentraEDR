@@ -3,6 +3,7 @@ resolver = "3"
 members = [
     "crates/shared-models",
     "crates/shared-ipc",
+    "crates/engine-etw",
     "crates/sentra-agent",
 ]
 

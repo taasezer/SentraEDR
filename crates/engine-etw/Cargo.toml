@@ -1,0 +1,13 @@
+[package]
+name = "engine-etw"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
+
+[dependencies]
+shared-models = { path = "../shared-models" }
+shared-ipc = { path = "../shared-ipc" }
+thiserror.workspace = true
