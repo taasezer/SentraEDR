@@ -1,7 +1,7 @@
 # SentraEDR Phase 2 ETW Process Ingestion Design
 
 Date: 2026-06-27
-Status: Draft for user review
+Status: Approved by user on 2026-06-27
 Scope: Narrow ETW process telemetry ingestion design for process start and process exit events.
 
 ## Objective
