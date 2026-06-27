@@ -24,6 +24,47 @@ impl SentraOrchestrator {
             self.config.telemetry.channel_capacity,
             "telemetry_stream".to_string(),
         );
+        
+        let mut ipc_server = sentra_ipc::IpcServer::new()?;
+        
+        // Spawn the IPC listener loop
+        tokio::spawn(async move {
+            info!("IPC Named Pipe server starting, waiting for UI connection...");
+            loop {
+                if let Err(e) = ipc_server.wait_for_client().await {
+                    tracing::error!("IPC Server error waiting for client: {}", e);
+                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                    continue;
+                }
+                info!("UI Client connected to IPC pipe");
+                
+                // Keep connection alive or send health data periodically
+                loop {
+                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    // Mock data
+                    let msg = sentra_ipc::IpcMessage::HealthResponse(sentra_core::SystemHealth {
+                        cpu_usage: 2.1,
+                        memory_usage_mb: 45.0,
+                        events_per_second: 100.0,
+                        channel_fill_percent: 0.1,
+                        dropped_events: 0,
+                        uptime_seconds: 3600,
+                    });
+                    
+                    if let Err(e) = ipc_server.send_message(&msg).await {
+                        tracing::warn!("IPC client disconnected: {}", e);
+                        // Disconnect and wait for new client
+                        break;
+                    }
+                }
+                
+                // recreate the server instance for next client (named pipes single instance)
+                ipc_server = match sentra_ipc::IpcServer::new() {
+                    Ok(s) => s,
+                    Err(_) => break,
+                };
+            }
+        });
 
         // 2. Initialize Telemetry Pipeline
         // In a real implementation we would spawn the ETW consumer here

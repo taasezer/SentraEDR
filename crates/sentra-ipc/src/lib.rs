@@ -28,6 +28,7 @@ pub mod bus;
 pub mod channel;
 pub mod messages;
 pub mod priority;
+pub mod pipe;
 
 // ── Convenience re-exports ──────────────────────────────────────────────
 
@@ -35,3 +36,4 @@ pub use bus::{BusHealth, EventBus};
 pub use channel::{BoundedChannel, ChannelHealth, ChannelReceiver, ChannelSender};
 pub use messages::IpcMessage;
 pub use priority::{PriorityDropCounts, PriorityQueue};
+pub use pipe::*;
