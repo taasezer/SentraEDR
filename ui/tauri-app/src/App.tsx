@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
-import { Shield, Activity, AlertTriangle, Cpu, ShieldAlert } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Activity, AlertTriangle, Cpu, ShieldAlert } from 'lucide-react';
+import logoUrl from '../app-icon.png';
 import './App.css';
 
 interface Alert {
@@ -15,58 +16,62 @@ interface Alert {
 
 function App() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [isConnected, setIsConnected] = useState(false);
-  const ws = useRef<WebSocket | null>(null);
+  const [engineStatus, setEngineStatus] = useState<'Connecting' | 'Active' | 'Error'>('Connecting');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    connectWebSocket();
+    let unlistenAlerts: () => void;
+    let unlistenStart: () => void;
+    let unlistenError: () => void;
+
+    const setupListeners = async () => {
+      const { listen } = await import('@tauri-apps/api/event');
+      const { invoke } = await import('@tauri-apps/api/core');
+
+      const unlistAlert = await listen<string>('edr-alert', (event) => {
+        try {
+          const data = JSON.parse(event.payload);
+          setAlerts((prev) => [data, ...prev]);
+        } catch (e) {
+          console.error("Failed to parse alert", e);
+        }
+      });
+      unlistenAlerts = unlistAlert;
+
+      const unlistStart = await listen<string>('engine-started', () => {
+        setEngineStatus('Active');
+      });
+      unlistenStart = unlistStart;
+
+      const unlistErr = await listen<string>('engine-error', (event) => {
+        setEngineStatus('Error');
+        setErrorMessage(event.payload);
+      });
+      unlistenError = unlistErr;
+
+      // Start the engine after listeners are attached
+      await invoke('start_engine');
+    };
+
+    setupListeners();
+
     return () => {
-      if (ws.current) {
-        ws.current.close();
-      }
+      if (unlistenAlerts) unlistenAlerts();
+      if (unlistenStart) unlistenStart();
+      if (unlistenError) unlistenError();
     };
   }, []);
-
-  const connectWebSocket = () => {
-    const socket = new WebSocket('ws://127.0.0.1:8080/ws');
-
-    socket.onopen = () => {
-      setIsConnected(true);
-      console.log('Connected to SentraEDR Detection Engine');
-    };
-
-    socket.onclose = () => {
-      setIsConnected(false);
-      // Try to reconnect every 3 seconds
-      setTimeout(connectWebSocket, 3000);
-    };
-
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.alert_id) {
-          // It's an alert object
-          setAlerts((prev) => [data, ...prev]);
-        }
-      } catch (e) {
-        // Just a normal text message (like the welcome message)
-        console.log("Server message:", event.data);
-      }
-    };
-
-    ws.current = socket;
-  };
 
   return (
     <div className="dashboard-container">
       <header className="header">
         <div className="header-title">
-          <Shield className="shield-icon" size={32} />
-          SentraEDR Dashboard
+          <img src={logoUrl} alt="SentraEDR Logo" className="logo-image" />
+          SentraEDR
         </div>
-        <div className={`status-badge ${!isConnected ? 'disconnected' : ''}`}>
+        <div className={`status-badge ${engineStatus === 'Error' ? 'disconnected' : ''}`}>
           <div className="status-dot"></div>
-          {isConnected ? 'Engine Connected' : 'Disconnected - Retrying...'}
+          {engineStatus === 'Active' ? 'Engine Active' : engineStatus === 'Error' ? 'Error: Run as Admin' : 'Initializing Engine...'}
         </div>
       </header>
 
@@ -84,10 +89,11 @@ function App() {
           </div>
           <div className="stat-card">
             <div className="stat-title">Engine Status</div>
-            <div className="stat-value" style={{ fontSize: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Cpu size={24} color="var(--accent-color)" />
-              Active
+            <div className={`stat-value engine-status ${engineStatus === 'Active' ? 'active' : 'inactive'}`}>
+              <Cpu size={24} color={engineStatus === 'Active' ? "var(--accent-color)" : engineStatus === 'Error' ? "var(--danger-color)" : "var(--text-secondary)"} />
+              {engineStatus === 'Active' ? 'Active' : engineStatus === 'Error' ? 'Failed' : 'Starting'}
             </div>
+            {errorMessage && <div style={{ fontSize: '11px', color: 'var(--danger-color)', marginTop: '4px' }}>{errorMessage}</div>}
           </div>
         </aside>
 
