@@ -89,6 +89,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "engine-memory"
+version = "0.1.0"
+dependencies = [
+ "shared-models",
+]
+
+[[package]]
 name = "engine-network"
 version = "0.1.0"
 dependencies = [
@@ -372,6 +379,7 @@ version = "0.1.0"
 dependencies = [
  "engine-detection",
  "engine-etw",
+ "engine-memory",
  "engine-network",
  "engine-persistence",
  "engine-process",
