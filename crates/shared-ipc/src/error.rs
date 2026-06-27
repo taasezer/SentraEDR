@@ -28,4 +28,7 @@ pub enum IpcError {
 
     #[error("stream buffer length {length} exceeds maximum {max}")]
     StreamBufferTooLarge { length: usize, max: usize },
+
+    #[error("internal error: {0}")]
+    InternalError(String),
 }

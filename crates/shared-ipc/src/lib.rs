@@ -3,6 +3,7 @@ pub mod error;
 pub mod frame;
 pub mod intake;
 pub mod message;
+pub mod pipeline;
 pub mod queue;
 pub mod stream;
 
@@ -14,5 +15,6 @@ pub use message::{
     AuditRecord, IpcEnvelope, IpcMessageKind, IpcPayload, MessageId, RemediationStatusUpdate,
     TelemetrySummary, UserDecision,
 };
+pub use pipeline::{IpcPipeline, IpcPipelineStats};
 pub use queue::{BoundedReceiver, BoundedSender, QueueSnapshot, bounded_channel};
 pub use stream::{IpcStreamAssembler, IpcStreamAssemblerStats};
