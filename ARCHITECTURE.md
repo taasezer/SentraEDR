@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 4
+Phase: 5
 
 ## Purpose
 
@@ -51,6 +51,8 @@ The flow is intentionally one-directional for security decisions. Detection may 
 `engine-network`
 
 - Owns outbound connection metadata, DNS metadata, destination rarity, and beacon cadence analysis.
+- Phase 5 implements observe-only metadata parsing, small destination history, and preliminary network behavior signals.
+- Does not capture packets, resolve DNS, open sockets, or modify firewall state.
 - Does not perform remediation or process suspension.
 
 `engine-persistence`
@@ -173,3 +175,7 @@ Workspace foundations are implemented. `shared-models`, `shared-ipc`, and `sentr
 ## Phase 4 Status
 
 `engine-persistence` now parses persistence metadata from normalized telemetry and emits preliminary observe-only signals for registry Run keys, startup folders, scheduled tasks, services, and WMI subscription indicators. Real registry access, scheduled task APIs, service control APIs, WMI querying, persistence rollback, final detection scoring, alert generation, remediation, and UI streaming remain deferred.
+
+## Phase 5 Status
+
+`engine-network` now parses network metadata from normalized telemetry, tracks small in-memory destination history, and emits preliminary observe-only signals for rare external destinations, suspicious DNS patterns, beacon interval candidates, high-risk ports, and IP-literal outbound connections. Packet capture, WFP, ETW TCP/IP sessions, DNS resolver integration, firewall isolation, final detection scoring, remediation, and UI streaming remain deferred.

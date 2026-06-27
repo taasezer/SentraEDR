@@ -13,6 +13,8 @@ $forbidden = @(
     @{ Crate = "engine-process"; Pattern = 'path\s*=\s*"\.\./engine-'; Message = "engine-process must not depend on peer engine crates" },
     @{ Crate = "engine-persistence"; Pattern = 'path\s*=\s*"\.\./(sentra-agent|sentra-ui)"'; Message = "engine-persistence must not depend on agent or UI crates" },
     @{ Crate = "engine-persistence"; Pattern = 'path\s*=\s*"\.\./engine-'; Message = "engine-persistence must not depend on peer engine crates" },
+    @{ Crate = "engine-network"; Pattern = 'path\s*=\s*"\.\./(sentra-agent|sentra-ui)"'; Message = "engine-network must not depend on agent or UI crates" },
+    @{ Crate = "engine-network"; Pattern = 'path\s*=\s*"\.\./engine-'; Message = "engine-network must not depend on peer engine crates" },
     @{ Crate = "sentra-agent"; Pattern = 'path\s*=\s*"\.\./sentra-ui"'; Message = "sentra-agent must not depend on UI crates" }
 )
 

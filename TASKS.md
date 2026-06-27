@@ -195,11 +195,33 @@ Performance notes:
 
 ## Phase 5: Network Engine
 
-Status: Deferred
+Status: Complete pending user review
 
-Reason:
+Completed:
 
-- Requires core runtime and queue design from earlier phases.
+- Added `engine-network` crate.
+- Added network metadata parser.
+- Added destination history tracking.
+- Added observe-only preliminary network signals.
+- Added rare external destination matching.
+- Added suspicious DNS pattern matching.
+- Added beacon interval candidate matching.
+- Added high-risk port matching.
+- Added IP-literal outbound connection matching.
+- Added agent synthetic network analysis dry run.
+- Added architecture validation rules for `engine-network`.
+
+Validation:
+
+- Analyzer tests cover public/private destinations, suspicious DNS, high-risk ports, beacon intervals, IP-literal connections, and ignored telemetry.
+- Agent dry-run test covers synthetic network analysis and signal counts.
+- Final Phase 5 command results are recorded in `TEST_RESULTS/phase-5.md`.
+
+Architectural impact:
+
+- `engine-network` consumes shared telemetry metadata instead of OS networking APIs.
+- `engine-network` depends only on `shared-models`.
+- Final scoring, alerting, network isolation, remediation, and UI behavior remain deferred.
 
 ## Phase 6: Heuristic Detection Engine
 
