@@ -282,11 +282,34 @@ Architectural impact:
 
 ## Phase 8: Memory Inspection Engine
 
-Status: Deferred
+Status: Complete pending user review
 
-Reason:
+Completed:
 
-- Requires stable core telemetry and careful safety review.
+- Added `engine-memory` crate.
+- Added shared `TelemetryAction::MemoryEventObserved`.
+- Added memory metadata parser.
+- Added observe-only preliminary memory signals.
+- Added remote thread creation metadata matching.
+- Added executable private memory metadata matching.
+- Added unsigned module metadata matching.
+- Added suspicious section mapping metadata matching.
+- Added memory protection escalation metadata matching.
+- Added agent synthetic memory analysis dry run.
+- Added architecture validation rules for `engine-memory`.
+
+Validation:
+
+- Analyzer tests cover remote thread, executable private memory, unsigned module, section mapping, protection escalation, and ignored telemetry.
+- Agent dry-run test covers synthetic memory analysis and signal counts.
+- Final Phase 8 command results are recorded in `TEST_RESULTS/phase-8.md`.
+
+Architectural impact:
+
+- `engine-memory` depends only on `shared-models`.
+- `engine-memory` does not import process, persistence, network, ETW, detection, remediation, agent, or UI crates.
+- Phase 8 is metadata-only and does not read process memory.
+- Real memory scanning, process handle access, memory dumps, kernel drivers, injection, remediation, final alerting, and UI behavior remain deferred.
 
 ## Phase 9: UI Dashboard
 

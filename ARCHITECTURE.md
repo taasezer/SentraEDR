@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 7
+Phase: 8
 
 ## Purpose
 
@@ -80,7 +80,8 @@ The flow is intentionally one-directional for security decisions. Detection may 
 `engine-memory`
 
 - Owns memory inspection, suspicious thread starts, and injection indicators.
-- Deferred until process and ETW telemetry are stable.
+- Phase 8 implements observe-only memory telemetry metadata analysis for remote thread, executable private memory, unsigned module, section mapping, and memory protection indicators.
+- Does not read process memory, dump memory, inject code, call Windows memory APIs, suspend processes, remediate, or create final alerts.
 
 `shared-models`
 
@@ -191,3 +192,7 @@ Workspace foundations are implemented. `shared-models`, `shared-ipc`, and `sentr
 ## Phase 7 Status
 
 `engine-remediation` now evaluates alerts through explicit policy gates and emits auditable remediation decisions. Observe-only alerts, telemetry uncertainty, disabled policy, and below-threshold risk are rejected by policy. Eligible high-risk alerts can produce approval-required remediation plans, but no executor exists yet; quarantine, process suspension, network isolation, registry writes, rollback, and deletion remain unimplemented.
+
+## Phase 8 Status
+
+`engine-memory` now parses normalized memory telemetry metadata and emits preliminary observe-only signals for remote thread creation, executable private memory, unsigned module loads, suspicious section mapping, and executable memory protection changes. This phase is metadata-only; real memory scanning, process handle access, memory reads, dumps, kernel drivers, injection, remediation, final alerting, and UI streaming remain deferred.

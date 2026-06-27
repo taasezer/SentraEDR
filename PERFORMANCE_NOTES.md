@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 7
+Phase: 8
 
 ## Performance Goals
 
@@ -102,3 +102,7 @@ Synthetic detection analysis validates small-batch signal scoring and family div
 ## Phase 7 Status
 
 Synthetic remediation analysis validates deterministic policy checks, small in-memory plan construction, and audit metadata generation. The implementation introduces no blocking OS calls, filesystem mutation, registry access, firewall modification, process control, persistent store, or unbounded channel. Real quarantine throughput, rollback overhead, and audit persistence benchmarks remain future work.
+
+## Phase 8 Status
+
+Synthetic memory analysis validates deterministic metadata parsing and signal mapping. The implementation introduces no process memory reads, dumps, handle enumeration, driver calls, blocking Windows memory APIs, persistent store, regex engine, or unbounded channel. Real high-volume memory telemetry, process access overhead, and retention benchmarks remain future work.
