@@ -17,7 +17,12 @@ pub struct QueueHealth {
 }
 
 impl QueueHealth {
-    pub fn new(name: impl Into<String>, capacity: usize, depth: usize, dropped_events: u64) -> Self {
+    pub fn new(
+        name: impl Into<String>,
+        capacity: usize,
+        depth: usize,
+        dropped_events: u64,
+    ) -> Self {
         Self {
             name: name.into(),
             capacity,
