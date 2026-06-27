@@ -8,6 +8,7 @@ rust-version.workspace = true
 version.workspace = true
 
 [dependencies]
+engine-detection = { path = "../engine-detection" }
 engine-etw = { path = "../engine-etw" }
 engine-network = { path = "../engine-network" }
 engine-persistence = { path = "../engine-persistence" }

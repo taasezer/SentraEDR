@@ -73,6 +73,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
+name = "engine-detection"
+version = "0.1.0"
+dependencies = [
+ "shared-models",
+]
+
+[[package]]
 name = "engine-etw"
 version = "0.1.0"
 dependencies = [
@@ -355,6 +362,7 @@ checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 name = "sentra-agent"
 version = "0.1.0"
 dependencies = [
+ "engine-detection",
  "engine-etw",
  "engine-network",
  "engine-persistence",
