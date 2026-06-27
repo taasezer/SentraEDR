@@ -44,8 +44,14 @@ impl PersistenceEvent {
             path,
             value,
             operation,
-            image_path: event.metadata.get("persistence.image_path").map(str::to_string),
-            command: event.metadata.get("persistence.command").map(str::to_string),
+            image_path: event
+                .metadata
+                .get("persistence.image_path")
+                .map(str::to_string),
+            command: event
+                .metadata
+                .get("persistence.command")
+                .map(str::to_string),
             user: event.metadata.get("persistence.user").map(str::to_string),
             supporting_event_id: event.event_id.clone(),
             observed_at: event.timestamp.clone(),

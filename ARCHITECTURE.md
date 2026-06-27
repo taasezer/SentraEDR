@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 3
+Phase: 4
 
 ## Purpose
 
@@ -56,6 +56,9 @@ The flow is intentionally one-directional for security decisions. Detection may 
 `engine-persistence`
 
 - Owns Run keys, startup folders, scheduled tasks, services, and WMI persistence analysis.
+- Phase 4 implements observe-only metadata parsing and preliminary persistence behavior signals from normalized telemetry.
+- Does not call Windows Registry, Task Scheduler, Service Control Manager, WMI, or filesystem APIs.
+- Does not create final alerts or remediation eligibility.
 - Remediation is delegated to `engine-remediation` after policy approval.
 
 `engine-detection`
@@ -166,3 +169,7 @@ Workspace foundations are implemented. `shared-models`, `shared-ipc`, and `sentr
 ## Phase 3 Status
 
 `engine-process` now tracks process start and exit telemetry in an in-memory state table and emits preliminary observe-only process signals. Initial signals cover suspicious parent-child process chains, PowerShell encoded command flags, and execution from user-writable paths. Full risk scoring, alert generation, signer reputation, Windows process enumeration, remediation, and UI streaming remain deferred.
+
+## Phase 4 Status
+
+`engine-persistence` now parses persistence metadata from normalized telemetry and emits preliminary observe-only signals for registry Run keys, startup folders, scheduled tasks, services, and WMI subscription indicators. Real registry access, scheduled task APIs, service control APIs, WMI querying, persistence rollback, final detection scoring, alert generation, remediation, and UI streaming remain deferred.

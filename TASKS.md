@@ -159,11 +159,39 @@ Performance notes:
 
 ## Phase 4: Persistence Engine
 
-Status: Deferred
+Status: Complete pending user review
 
-Reason:
+Completed:
 
-- Requires shared models and observe-only detection plumbing.
+- Added `engine-persistence` crate.
+- Added persistence metadata parser.
+- Added persistence analysis report and stats.
+- Added observe-only preliminary persistence signals.
+- Added registry Run key persistence matching.
+- Added startup folder persistence matching.
+- Added scheduled task persistence matching.
+- Added service persistence matching.
+- Added WMI persistence matching.
+- Added agent synthetic persistence analysis dry run.
+- Added architecture validation rules for `engine-persistence`.
+
+Validation:
+
+- Analyzer tests cover Run key, startup folder, scheduled task, service, WMI, and ignored telemetry.
+- Agent dry-run test covers synthetic persistence analysis and signal counts.
+- Final Phase 4 command results are recorded in `TEST_RESULTS/phase-4.md`.
+
+Architectural impact:
+
+- `engine-persistence` consumes shared telemetry metadata instead of Windows API types.
+- `engine-persistence` depends only on `shared-models`.
+- Final scoring, alerting, rollback, remediation, and UI behavior remain deferred.
+
+Performance notes:
+
+- Matching uses conservative string checks.
+- No regex engine, persistent store, Windows API access, or unbounded channel is introduced.
+- No real registry or Windows Event Log throughput benchmark is claimed yet.
 
 ## Phase 5: Network Engine
 

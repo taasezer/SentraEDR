@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 3
+Phase: 4
 
 ## Performance Goals
 
@@ -86,3 +86,7 @@ The first executable telemetry path is available through synthetic process ETW r
 ## Phase 3 Status
 
 Synthetic process analysis validates small in-memory state updates and deterministic string matching for initial process signals. The implementation introduces no regex engine, no unbounded channels, no persistent store, and no real process enumeration. Retention limits and memory pressure policies remain future work before high-volume process telemetry is claimed.
+
+## Phase 4 Status
+
+Synthetic persistence analysis validates metadata extraction and deterministic string matching for initial persistence signals. The implementation introduces no regex engine, no Windows API calls, no filesystem scanning, no unbounded channels, and no persistent store. High-volume registry or Windows Event Log ingestion benchmarks remain future work.

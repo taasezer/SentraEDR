@@ -111,7 +111,10 @@ fn wmi_metadata_emits_wmi_signal() {
     assert_eq!(report.signals.len(), 1);
     assert_eq!(report.signals[0].name, "wmi_persistence");
     assert_eq!(report.signals[0].severity, SignalSeverity::High);
-    assert_eq!(report.signals[0].event.kind, PersistenceKind::WmiSubscription);
+    assert_eq!(
+        report.signals[0].event.kind,
+        PersistenceKind::WmiSubscription
+    );
 }
 
 #[test]
