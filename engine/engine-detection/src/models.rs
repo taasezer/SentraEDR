@@ -1,6 +1,7 @@
+use serde::Serialize;
 use uuid::Uuid;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Evidence {
     /// References to the exact immutable events that triggered the alert.
     pub related_event_ids: Vec<Uuid>,
@@ -8,7 +9,7 @@ pub struct Evidence {
     pub reasoning_path: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Alert {
     pub alert_id: Uuid,
     pub rule_id: String,
