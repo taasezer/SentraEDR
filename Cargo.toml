@@ -1,0 +1,44 @@
+[workspace]
+resolver = "2"
+members = [
+    "shared/shared-models",
+    "shared/shared-ipc",
+    "engine/engine-etw",
+    "engine/engine-process",
+    "engine/engine-network",
+    "engine/engine-persistence",
+    "engine/engine-detection"
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["SentraEDR Engineering Team"]
+description = "Modern lightweight Anti-RAT / EDR platform"
+license = "MIT"
+
+[workspace.dependencies]
+tokio = { version = "1.40", features = ["rt", "sync", "time"] }
+windows = { version = "0.58", features = ["Win32_Foundation", "Win32_System_Diagnostics_Etw", "Win32_System_SystemServices", "Win32_System_Threading"] }
+chrono = "0.4"
+uuid = { version = "1", features = ["v4", "fast-rng"] }
+thiserror = "2"
+shared-models = { path = "shared/shared-models" }
+shared-ipc = { path = "shared/shared-ipc" }
+
+[workspace.lints.rust]
+unsafe_code = "warn"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
+
+[workspace.metadata.crates]
+shared-models = "Shared canonical models and event schemas. (No logic, no dependencies)"
+shared-ipc = "Named pipe communication layer, serialization, and message routing."
+engine-etw = "Centralized ETW ingestion and normalization."
+engine-process = "Realtime process analysis, enumeration, and token inspection."
+engine-network = "Outbound connection tracking and DNS analysis."
+engine-persistence = "Registry, scheduled task, and service persistence monitoring."
+engine-detection = "Central detection, heuristic scoring, and behavioral correlation engine."
