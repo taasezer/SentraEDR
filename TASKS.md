@@ -253,11 +253,32 @@ Architectural impact:
 
 ## Phase 7: Quarantine And Remediation Engine
 
-Status: Deferred
+Status: Complete pending user review
 
-Reason:
+Completed:
 
-- Requires validated detection confidence, audit, and rollback contracts.
+- Added `engine-remediation` crate.
+- Added remediation policy model.
+- Added deterministic remediation decision statuses.
+- Added remediation plan and planned step model.
+- Added remediation audit record generation.
+- Added rejection gates for observe-only alerts, telemetry uncertainty, disabled policy, and risk below threshold.
+- Added approval-required planning for eligible high-risk alerts.
+- Added agent synthetic remediation dry run.
+- Added architecture validation rules for `engine-remediation`.
+
+Validation:
+
+- Policy tests cover observe-only rejection, telemetry uncertainty rejection, disabled policy rejection, approval-required planning, and allowed-action constraints.
+- Agent dry-run test covers one rejected decision and one waiting-for-approval plan.
+- Final Phase 7 command results are recorded in `TEST_RESULTS/phase-7.md`.
+
+Architectural impact:
+
+- `engine-remediation` depends only on `shared-models`.
+- `engine-remediation` does not import detection, process, persistence, network, ETW, agent, or UI crates.
+- Phase 7 creates plans and audit records only; it does not execute remediation.
+- Quarantine, process suspension, network isolation, registry rollback, firewall changes, and deletion remain deferred.
 
 ## Phase 8: Memory Inspection Engine
 

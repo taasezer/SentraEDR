@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 6
+Phase: 7
 
 ## Purpose
 
@@ -73,6 +73,8 @@ The flow is intentionally one-directional for security decisions. Detection may 
 `engine-remediation`
 
 - Owns gated quarantine, process suspension, network isolation hooks, registry backup, persistence rollback, and audit trails.
+- Phase 7 implements policy-gated remediation planning, rejection/approval decisions, and audit records.
+- Does not execute Windows API calls, filesystem moves, registry writes, firewall changes, process suspension, or deletion.
 - Executes only after confidence, policy, and approval checks pass.
 
 `engine-memory`
@@ -185,3 +187,7 @@ Workspace foundations are implemented. `shared-models`, `shared-ipc`, and `sentr
 ## Phase 6 Status
 
 `engine-detection` now correlates preliminary signals into scored findings and observe-only alerts. Initial scoring uses severity hints and signal-family diversity across process, persistence, network, and PowerShell families. Alerts remain remediation-ineligible; policy allowlists, advanced false-positive suppression, production rule loading, remediation, and UI workflows remain deferred.
+
+## Phase 7 Status
+
+`engine-remediation` now evaluates alerts through explicit policy gates and emits auditable remediation decisions. Observe-only alerts, telemetry uncertainty, disabled policy, and below-threshold risk are rejected by policy. Eligible high-risk alerts can produce approval-required remediation plans, but no executor exists yet; quarantine, process suspension, network isolation, registry writes, rollback, and deletion remain unimplemented.
