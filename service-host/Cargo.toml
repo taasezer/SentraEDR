@@ -8,5 +8,7 @@ authors.workspace = true
 core-runtime = { path = "../core/core-runtime" }
 core-observability = { path = "../core/core-observability" }
 engine-etw = { path = "../engine/engine-etw" }
+engine-detection = { path = "../engine/engine-detection" }
+shared-models = { path = "../shared/shared-models" }
 tokio.workspace = true
 windows-service = "0.7"
