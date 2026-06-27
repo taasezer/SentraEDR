@@ -1,7 +1,7 @@
 use crate::{IpcEnvelope, IpcError};
 
 pub const MAX_FRAME_PAYLOAD_BYTES: usize = 1024 * 1024;
-const FRAME_PREFIX_BYTES: usize = 4;
+pub const FRAME_PREFIX_BYTES: usize = 4;
 
 pub fn encode_frame(envelope: &IpcEnvelope) -> Result<Vec<u8>, IpcError> {
     envelope.validate()?;

@@ -25,4 +25,7 @@ pub enum IpcError {
 
     #[error("dispatcher queue capacity must be greater than zero, got {capacity}")]
     InvalidDispatcherCapacity { capacity: usize },
+
+    #[error("stream buffer length {length} exceeds maximum {max}")]
+    StreamBufferTooLarge { length: usize, max: usize },
 }
