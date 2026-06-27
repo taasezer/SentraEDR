@@ -41,6 +41,10 @@ thiserror = "2"
 shared-models = { path = "shared/shared-models" }
 shared-ipc = { path = "shared/shared-ipc" }
 
+[workspace.dev-dependencies]
+criterion = "0.5"
+tokio-test = "0.4"
+
 [workspace.lints.rust]
 unsafe_code = "warn"
 missing_docs = "warn"
