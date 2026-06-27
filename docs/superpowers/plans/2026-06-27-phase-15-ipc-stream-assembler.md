@@ -17,7 +17,7 @@
 - Modify later: `crates/shared-ipc/src/lib.rs`
 - Create later: `crates/shared-ipc/src/stream.rs`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Create tests for:
 
@@ -26,7 +26,7 @@ Create tests for:
 - an oversized length prefix is rejected before payload buffering;
 - partial bytes remain buffered and appear in stats.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `cargo test -p shared-ipc --test stream`
 
@@ -40,23 +40,23 @@ Expected: fail because `IpcStreamAssembler` and `IpcStreamAssemblerStats` are mi
 - Modify: `crates/shared-ipc/src/lib.rs`
 - Create: `crates/shared-ipc/src/stream.rs`
 
-- [ ] **Step 1: Export frame prefix size**
+- [x] **Step 1: Export frame prefix size**
 
 Expose `FRAME_PREFIX_BYTES` from `frame.rs` for assembler use.
 
-- [ ] **Step 2: Add stream buffer error**
+- [x] **Step 2: Add stream buffer error**
 
 Add `StreamBufferTooLarge { length: usize, max: usize }`.
 
-- [ ] **Step 3: Add assembler stats**
+- [x] **Step 3: Add assembler stats**
 
 Add `IpcStreamAssemblerStats` with `frames_completed`, `bytes_buffered`, and `rejected`.
 
-- [ ] **Step 4: Implement `push_bytes`**
+- [x] **Step 4: Implement `push_bytes`**
 
 Append bytes into a bounded buffer, parse complete frames, remove emitted bytes, reject oversized prefixes, and update stats.
 
-- [ ] **Step 5: Run GREEN**
+- [x] **Step 5: Run GREEN**
 
 Run: `cargo test -p shared-ipc --test stream`
 
@@ -72,11 +72,11 @@ Expected: pass.
 - Create: `PHASE_REPORTS/phase-15.md`
 - Create: `TEST_RESULTS/phase-15.md`
 
-- [ ] **Step 1: Record Phase 15 docs**
+- [x] **Step 1: Record Phase 15 docs**
 
 Document that Phase 15 adds bounded in-memory stream assembly only.
 
-- [ ] **Step 2: Run final verification**
+- [x] **Step 2: Run final verification**
 
 Run:
 

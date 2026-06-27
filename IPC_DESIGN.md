@@ -1,7 +1,7 @@
 # SentraEDR IPC Design
 
 Date: 2026-06-27
-Phase: 14
+Phase: 15
 
 ## IPC Choice
 
@@ -106,3 +106,15 @@ Named-pipe transport, pipe ACLs, UI streaming, command authorization, and live r
 - Dispatch failures are counted after successful decode when validation or queue pressure rejects delivery.
 
 Stream buffering, named-pipe transport, pipe ACLs, UI streaming, command authorization, and live remediation handling remain deferred.
+
+## Phase 15 Status
+
+`shared-ipc` now provides bounded stream assembly before frame intake:
+
+- `IpcStreamAssembler` accepts arbitrary byte chunks.
+- Partial frame bytes remain buffered until complete.
+- Multiple complete frames in one chunk are emitted in order.
+- Oversized length prefixes are rejected before waiting for payload bytes.
+- `IpcStreamAssemblerStats` tracks completed frames, buffered bytes, and rejected stream inputs.
+
+Named-pipe transport, pipe ACLs, async read loops, UI streaming, command authorization, and live remediation handling remain deferred.

@@ -505,3 +505,38 @@ Performance notes:
 
 - Intake accepts complete frames only and does not allocate an unbounded stream buffer.
 - Decode and dispatch failures are counted separately for future health reporting.
+
+## Phase 15: IPC Stream Assembler
+
+Status: Complete pending user review
+
+Completed:
+
+- Added bounded in-memory `IpcStreamAssembler` to `shared-ipc`.
+- Added assembler statistics for completed frames, buffered bytes, and rejected inputs.
+- Added partial frame buffering across chunks.
+- Added extraction of multiple complete frames from one chunk.
+- Added oversized length-prefix rejection before payload buffering.
+- Exported frame prefix size for stream assembly tests and consumers.
+- Added Phase 15 report and test results.
+
+Validation:
+
+- Stream tests cover split frame completion, multiple frames in one chunk, oversized prefix rejection, and partial prefix buffering.
+- Final Phase 15 command results are recorded in `TEST_RESULTS/phase-15.md`.
+
+Architectural impact:
+
+- `shared-ipc` now owns byte chunk assembly before frame intake.
+- Stream assembly remains transport-agnostic and does not import agent, UI, or engine crates.
+- Frame decoding, dispatch, UI command authorization, and payload execution remain outside this assembler.
+
+Security notes:
+
+- No named-pipe server/client, Windows ACL, async pipe read loop, UI streaming, remediation execution, malware execution, Atomic Red Team execution, VM orchestration, deployment, or signing was added.
+- Stream chunks remain opaque bytes until later decode and dispatch layers handle them as data.
+
+Performance notes:
+
+- Incomplete buffering is bounded to one maximum-sized frame.
+- Oversized frame lengths are rejected before waiting for payload bytes.

@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 14
+Phase: 15
 
 ## Performance Goals
 
@@ -91,6 +91,10 @@ Phase 14:
 
 - IPC intake must count decode and dispatch failures without unbounded buffering.
 
+Phase 15:
+
+- IPC stream assembly must bound incomplete frame buffering and reject oversized prefixes early.
+
 ## Phase 0 Status
 
 Performance is specified as design targets. Measurements begin when executable components exist.
@@ -146,3 +150,7 @@ IPC dispatch now routes validated messages into bounded per-category queues and 
 ## Phase 14 Status
 
 IPC frame intake now composes frame decode and bounded dispatch while tracking accepted, decode-failed, and dispatch-failed frame counts. The implementation accepts complete frames only and introduces no stream buffer, named-pipe loop, socket, background scheduler, persistent store, unbounded channel, production telemetry stream, or benchmark claim.
+
+## Phase 15 Status
+
+IPC stream assembly now buffers incomplete frame bytes up to one maximum-sized frame and emits complete frames for downstream intake. Oversized prefixes are rejected before payload buffering. The implementation introduces no named-pipe loop, socket, background scheduler, persistent store, unbounded channel, production telemetry stream, or benchmark claim.
