@@ -5,6 +5,7 @@ members = [
     "crates/shared-ipc",
     "crates/engine-etw",
     "crates/engine-process",
+    "crates/engine-persistence",
     "crates/sentra-agent",
 ]
 
