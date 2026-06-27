@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 18
+Phase: 19
 
 ## Performance Goals
 
@@ -107,6 +107,10 @@ Phase 18:
 
 - UI live telemetry projection must store aggregate panel state and timeline entries only, not raw telemetry streams.
 
+Phase 19:
+
+- Static demo rendering must remain deterministic string generation from aggregate UI state.
+
 ## Phase 0 Status
 
 Performance is specified as design targets. Measurements begin when executable components exist.
@@ -178,3 +182,7 @@ The agent IPC service skeleton now wraps the in-memory pipeline behind bounded c
 ## Phase 18 Status
 
 The UI live telemetry projection stores a single latest panel and sorted timeline entries derived from aggregate snapshots. It does not add rendering loops, live IPC transport, persistent storage, background polling, unbounded channels, or raw event retention.
+
+## Phase 19 Status
+
+Static demo rendering generates a single HTML document from existing dashboard state. It does not add a web server, live update loop, JavaScript runtime, persistent storage, background polling, unbounded channels, or raw event retention.

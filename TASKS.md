@@ -650,3 +650,38 @@ Performance notes:
 
 - UI projection stores aggregate counters and a current panel, not raw telemetry streams.
 - Timeline additions are deterministic and bounded by caller-provided update frequency.
+
+## Phase 19: Static Demo Dashboard
+
+Status: Complete pending user review
+
+Completed:
+
+- Added static HTML dashboard rendering to `sentra-ui`.
+- Added `render_dashboard_html(&DashboardState)` for producing a complete offline demo document.
+- Rendered live telemetry, risk summary, alert review, pending actions, and event timeline sections.
+- Added HTML escaping for dynamic dashboard text.
+- Added `sentra-ui` example binary `demo_dashboard`.
+- The example writes `target/sentra-demo-dashboard.html`.
+
+Validation:
+
+- Renderer tests cover expected demo sections and telemetry metrics.
+- Renderer tests cover escaping of dynamic text.
+- The example binary generates the static HTML artifact.
+- Final Phase 19 command results are recorded in `TEST_RESULTS/phase-19.md`.
+
+Architectural impact:
+
+- `sentra-ui` now has a demo renderer while remaining independent from agent, IPC, and engine crates.
+- The static artifact can be opened locally without a dev server.
+
+Security notes:
+
+- Phase 19 adds display-only static HTML.
+- No web server, named-pipe client, JavaScript command channel, user approval execution, remediation execution, malware execution, VM orchestration, deployment, or signing was added.
+
+Performance notes:
+
+- Rendering is deterministic string generation from aggregate dashboard state.
+- No raw telemetry retention, background polling, persistent store, or unbounded channel was introduced.

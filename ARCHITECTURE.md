@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 18
+Phase: 19
 
 ## Purpose
 
@@ -104,6 +104,7 @@ The flow is intentionally one-directional for security decisions. Detection may 
 - Owns dashboard state, alert review, timeline display, and explicit user action flows.
 - Phase 9 implements dashboard state preparation, alert cards, risk summaries, timeline entries, and pending action review cards.
 - Phase 18 adds live telemetry projection state for agent health, aggregate counters, IPC health, and telemetry update timeline entries.
+- Phase 19 adds static HTML demo rendering from dashboard state.
 - Does not render a live web UI, connect IPC, approve remediation, execute actions, or import agent and engine crates.
 - Must not import engine internals.
 
@@ -252,3 +253,7 @@ Workspace quality gates are now defined as non-destructive metadata in `testing-
 ## Phase 18 Status
 
 `sentra-ui` now projects live/demo telemetry snapshots into dashboard state. The UI projection includes agent status, highest priority, aggregate telemetry counts, behavioral signal totals, detection alert counts, IPC enabled state, IPC capacity, accepted IPC frames, failed IPC frames, and last-updated timestamps. Dashboard state can apply a telemetry snapshot and add a sorted `TelemetryUpdated` timeline entry without changing alert summaries. This phase remains projection-only and does not add rendering, live IPC transport, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.
+
+## Phase 19 Status
+
+`sentra-ui` now renders a static, offline demo dashboard from `DashboardState`. The renderer produces telemetry metric panels, risk summary, alert review, pending action, and timeline sections, and it escapes dynamic text before inserting it into HTML. A crate-local example generates `target/sentra-demo-dashboard.html` from synthetic demo data. This phase does not add a web server, JavaScript runtime, live IPC transport, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.
