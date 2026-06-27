@@ -53,6 +53,7 @@ pub enum TelemetryAction {
     RegistryChanged,
     PowerShellExecuted,
     NetworkConnectionObserved,
+    MemoryEventObserved,
     ComponentHealthChanged,
 }
 

@@ -9,6 +9,7 @@ members = [
     "crates/engine-network",
     "crates/engine-detection",
     "crates/engine-remediation",
+    "crates/engine-memory",
     "crates/sentra-agent",
 ]
 
