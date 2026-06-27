@@ -92,16 +92,13 @@ fn is_rare_external_destination(event: &NetworkEvent) -> bool {
         return false;
     }
 
-    match event.domain.as_deref().map(str::to_ascii_lowercase) {
+    !matches!(
+        event.domain.as_deref().map(str::to_ascii_lowercase),
         Some(domain)
             if domain == "localhost"
                 || domain.ends_with("microsoft.com")
-                || domain.ends_with("windowsupdate.com") =>
-        {
-            false
-        }
-        _ => true,
-    }
+                || domain.ends_with("windowsupdate.com")
+    )
 }
 
 fn has_suspicious_dns_pattern(event: &NetworkEvent) -> bool {
