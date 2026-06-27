@@ -22,4 +22,7 @@ pub enum IpcError {
 
     #[error("serialization error: {0}")]
     Serialization(String),
+
+    #[error("dispatcher queue capacity must be greater than zero, got {capacity}")]
+    InvalidDispatcherCapacity { capacity: usize },
 }
