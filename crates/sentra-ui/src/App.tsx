@@ -1,22 +1,24 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import "./App.css";
 
 function App() {
   const [health, setHealth] = useState<any>(null);
+  const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
-    // In a real implementation we would poll or listen to IPC events
-    // For now we just mock an initial health fetch
-    const fetchHealth = async () => {
-      try {
-        const res = await invoke("get_health_status");
-        setHealth(res);
-      } catch (err) {
-        console.error("Failed to fetch health:", err);
+    // Listen for IPC messages from the Rust backend
+    const unlisten = listen("ipc-message", (event: any) => {
+      const msg = event.payload;
+      if (msg && typeof msg === "object" && "HealthResponse" in msg) {
+        setHealth(msg.HealthResponse);
       }
+    });
+
+    return () => {
+      unlisten.then((f) => f());
     };
-    fetchHealth();
   }, []);
 
   return (
@@ -66,13 +68,13 @@ function App() {
           <div className="grid grid-cols-4 gap-6">
             <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-6 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#00ff9d]/5 rounded-full blur-2xl -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
-              <p className="text-slate-400 text-sm mb-2 relative z-10">Active Processes</p>
-              <p className="text-3xl font-bold text-white relative z-10">142</p>
+              <p className="text-slate-400 text-sm mb-2 relative z-10">CPU Usage</p>
+              <p className="text-3xl font-bold text-white relative z-10">{health ? `${health.cpu_usage.toFixed(1)}%` : "..."}</p>
             </div>
             <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-6 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
-              <p className="text-slate-400 text-sm mb-2 relative z-10">Network Connections</p>
-              <p className="text-3xl font-bold text-white relative z-10">89</p>
+              <p className="text-slate-400 text-sm mb-2 relative z-10">Events / Sec</p>
+              <p className="text-3xl font-bold text-white relative z-10">{health ? Math.floor(health.events_per_second) : "..."}</p>
             </div>
             <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-6 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-2xl -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
@@ -82,7 +84,7 @@ function App() {
             <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-6 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
               <p className="text-slate-400 text-sm mb-2 relative z-10">Memory Usage</p>
-              <p className="text-3xl font-bold text-white relative z-10">48 MB</p>
+              <p className="text-3xl font-bold text-white relative z-10">{health ? `${health.memory_usage_mb.toFixed(1)} MB` : "..."}</p>
             </div>
           </div>
 
