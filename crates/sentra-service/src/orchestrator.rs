@@ -30,6 +30,9 @@ impl SentraOrchestrator {
         // Spawn the IPC listener loop
         tokio::spawn(async move {
             info!("IPC Named Pipe server starting, waiting for UI connection...");
+            let mut sys = sysinfo::System::new_all();
+            let start_time = std::time::Instant::now();
+            
             loop {
                 if let Err(e) = ipc_server.wait_for_client().await {
                     tracing::error!("IPC Server error waiting for client: {}", e);
@@ -40,21 +43,34 @@ impl SentraOrchestrator {
                 
                 // Keep connection alive or send health data periodically
                 loop {
-                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-                    // Mock data
+                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                    
+                    sys.refresh_all();
+                    let cpu_usage = sys.global_cpu_usage();
+                    let memory_usage_mb = (sys.used_memory() as f64 / 1024.0 / 1024.0) as f32;
+                    let uptime = start_time.elapsed().as_secs();
+
                     let msg = sentra_ipc::IpcMessage::HealthResponse(sentra_core::SystemHealth {
-                        cpu_usage: 2.1,
-                        memory_usage_mb: 45.0,
-                        events_per_second: 100.0,
-                        channel_fill_percent: 0.1,
+                        cpu_usage,
+                        memory_usage_mb,
+                        events_per_second: 0.0, // We will update this when ETW is wired
+                        channel_fill_percent: 0.0,
                         dropped_events: 0,
-                        uptime_seconds: 3600,
+                        uptime_seconds: uptime,
                     });
                     
                     if let Err(e) = ipc_server.send_message(&msg).await {
                         tracing::warn!("IPC client disconnected: {}", e);
-                        // Disconnect and wait for new client
                         break;
+                    }
+
+                    // Send Process List
+                    if let Ok(processes) = sentra_process::enumerate::enumerate_processes() {
+                        let proc_msg = sentra_ipc::IpcMessage::ProcessList(processes);
+                        if let Err(e) = ipc_server.send_message(&proc_msg).await {
+                            tracing::warn!("IPC client disconnected during process list: {}", e);
+                            break;
+                        }
                     }
                 }
                 

@@ -8,13 +8,18 @@ import "./App.css";
 function App() {
   const [health, setHealth] = useState<any>(null);
   const [events, setEvents] = useState<any[]>([]);
+  const [processes, setProcesses] = useState<any[]>([]);
 
   useEffect(() => {
     // Listen for IPC messages from the Rust backend
     const unlisten = listen("ipc-message", (event: any) => {
       const msg = event.payload;
-      if (msg && typeof msg === "object" && "HealthResponse" in msg) {
-        setHealth(msg.HealthResponse);
+      if (msg && typeof msg === "object") {
+        if ("HealthResponse" in msg) {
+          setHealth(msg.HealthResponse);
+        } else if ("ProcessList" in msg) {
+          setProcesses(msg.ProcessList);
+        }
       }
     });
 
@@ -78,7 +83,7 @@ function App() {
           <div className="grid grid-cols-3 gap-6 h-[500px]">
             {/* Process Monitor (Left/Center 2 cols) */}
             <div className="col-span-2">
-              <ProcessMonitor />
+              <ProcessMonitor processes={processes} />
             </div>
             
             {/* Detection Timeline (Right col) */}

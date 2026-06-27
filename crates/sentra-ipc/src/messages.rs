@@ -42,6 +42,9 @@ pub enum IpcMessage {
     /// Response to a [`IpcMessage::HealthRequest`].
     HealthResponse(SystemHealth),
 
+    /// A list of running processes on the system.
+    ProcessList(Vec<sentra_core::ProcessInfo>),
+
     /// Instructs all components to perform a graceful shutdown.
     Shutdown,
 

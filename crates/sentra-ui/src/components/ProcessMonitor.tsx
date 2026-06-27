@@ -1,17 +1,17 @@
 import React from "react";
 
-export function ProcessMonitor() {
-  // Mock data for initial UI layout
-  const mockProcesses = [
-    { pid: 1404, name: "chrome.exe", user: "ASUS", integrity: "Medium", status: "Safe" },
-    { pid: 4892, name: "powershell.exe", user: "SYSTEM", integrity: "High", status: "Suspicious" },
-    { pid: 112, name: "svchost.exe", user: "SYSTEM", integrity: "System", status: "Safe" },
-    { pid: 8832, name: "unknown_miner.exe", user: "ASUS", integrity: "Medium", status: "Malicious" },
-  ];
+export function ProcessMonitor({ processes }: { processes: any[] }) {
+  // Use real data if available, otherwise fallback to empty state
+  const displayProcesses = processes && processes.length > 0 
+    ? processes.slice(0, 50) // Show top 50
+    : [];
 
   return (
     <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-6 h-full flex flex-col">
-      <h2 className="text-xl font-semibold text-white mb-4">Process Monitor</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-white">Process Monitor</h2>
+        <span className="text-sm text-slate-400">Showing {displayProcesses.length} active processes</span>
+      </div>
       <div className="flex-1 overflow-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -20,31 +20,29 @@ export function ProcessMonitor() {
               <th className="pb-3 font-medium">Process Name</th>
               <th className="pb-3 font-medium">User</th>
               <th className="pb-3 font-medium">Integrity</th>
-              <th className="pb-3 font-medium">Status</th>
             </tr>
           </thead>
           <tbody>
-            {mockProcesses.map((proc) => (
-              <tr key={proc.pid} className="border-b border-slate-700/20 hover:bg-slate-800/50 transition-colors">
-                <td className="py-3 text-slate-300">{proc.pid}</td>
-                <td className="py-3 text-white font-medium">{proc.name}</td>
-                <td className="py-3 text-slate-400">{proc.user}</td>
-                <td className="py-3 text-slate-400">
-                  <span className="px-2 py-1 rounded-md text-xs bg-slate-800 border border-slate-700">
-                    {proc.integrity}
-                  </span>
-                </td>
-                <td className="py-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    proc.status === 'Safe' ? 'bg-[#00ff9d]/10 text-[#00ff9d]' : 
-                    proc.status === 'Suspicious' ? 'bg-amber-500/10 text-amber-500' : 
-                    'bg-red-500/10 text-red-400'
-                  }`}>
-                    {proc.status}
-                  </span>
+            {displayProcesses.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="py-8 text-center text-slate-500">
+                  Waiting for process telemetry...
                 </td>
               </tr>
-            ))}
+            ) : (
+              displayProcesses.map((proc) => (
+                <tr key={proc.pid} className="border-b border-slate-700/20 hover:bg-slate-800/50 transition-colors">
+                  <td className="py-2 text-slate-300 text-sm">{proc.pid}</td>
+                  <td className="py-2 text-white font-medium text-sm">{proc.name}</td>
+                  <td className="py-2 text-slate-400 text-sm">{proc.user || "UNKNOWN"}</td>
+                  <td className="py-2 text-slate-400 text-sm">
+                    <span className="px-2 py-1 rounded-md text-[10px] uppercase tracking-wider bg-slate-800 border border-slate-700">
+                      {proc.integrity_level}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

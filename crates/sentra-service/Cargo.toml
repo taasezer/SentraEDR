@@ -14,6 +14,7 @@ sentra-network = { path = "../sentra-network" }
 sentra-persistence = { path = "../sentra-persistence" }
 sentra-remediation = { path = "../sentra-remediation" }
 tokio = { workspace = true }
+sysinfo = { workspace = true }
 windows = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }

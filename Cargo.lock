@@ -3142,6 +3142,7 @@ dependencies = [
  "sentra-process",
  "sentra-remediation",
  "sentra-telemetry",
+ "sysinfo",
  "tokio",
  "tracing",
  "tracing-subscriber",
