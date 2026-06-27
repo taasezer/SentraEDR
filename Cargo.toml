@@ -7,7 +7,9 @@ members = [
     "engine/engine-process",
     "engine/engine-network",
     "engine/engine-persistence",
-    "engine/engine-detection"
+    "engine/engine-detection",
+    "core/core-registry",
+    "infrastructure/infrastructure-storage"
 ]
 
 [workspace.package]
