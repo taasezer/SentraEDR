@@ -8,6 +8,7 @@ rust-version.workspace = true
 version.workspace = true
 
 [dependencies]
+engine-etw = { path = "../engine-etw" }
 serde.workspace = true
 shared-ipc = { path = "../shared-ipc" }
 shared-models = { path = "../shared-models" }
