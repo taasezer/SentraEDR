@@ -101,7 +101,7 @@ impl<T> ChannelSender<T> {
             Err(_) => {
                 self.metrics.total_dropped.fetch_add(1, Ordering::Relaxed);
                 warn!(channel = %self.metrics.name, "send failed — receiver dropped");
-                Err(sentra_core::SentraError::Ipc(format!(
+                Err(sentra_core::SentraError::Channel(format!(
                     "channel '{}' receiver closed",
                     self.metrics.name
                 )))
@@ -122,7 +122,7 @@ impl<T> ChannelSender<T> {
             Err(mpsc::error::TrySendError::Full(_)) => {
                 self.metrics.total_dropped.fetch_add(1, Ordering::Relaxed);
                 warn!(channel = %self.metrics.name, "try_send failed — channel full");
-                Err(sentra_core::SentraError::Ipc(format!(
+                Err(sentra_core::SentraError::Channel(format!(
                     "channel '{}' is full",
                     self.metrics.name
                 )))
@@ -130,7 +130,7 @@ impl<T> ChannelSender<T> {
             Err(mpsc::error::TrySendError::Closed(_)) => {
                 self.metrics.total_dropped.fetch_add(1, Ordering::Relaxed);
                 warn!(channel = %self.metrics.name, "try_send failed — receiver dropped");
-                Err(sentra_core::SentraError::Ipc(format!(
+                Err(sentra_core::SentraError::Channel(format!(
                     "channel '{}' receiver closed",
                     self.metrics.name
                 )))
@@ -183,10 +183,10 @@ impl<T> ChannelReceiver<T> {
                 self.metrics.total_received.fetch_add(1, Ordering::Relaxed);
                 Ok(item)
             }
-            Err(mpsc::error::TryRecvError::Empty) => Err(sentra_core::SentraError::Ipc(
+            Err(mpsc::error::TryRecvError::Empty) => Err(sentra_core::SentraError::Channel(
                 format!("channel '{}' is empty", self.metrics.name),
             )),
-            Err(mpsc::error::TryRecvError::Disconnected) => Err(sentra_core::SentraError::Ipc(
+            Err(mpsc::error::TryRecvError::Disconnected) => Err(sentra_core::SentraError::Channel(
                 format!("channel '{}' senders dropped", self.metrics.name),
             )),
         }

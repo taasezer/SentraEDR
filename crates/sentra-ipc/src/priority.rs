@@ -98,7 +98,7 @@ impl<T: Send + 'static> PriorityQueue<T> {
                 self.handle_full(item, priority)
             }
             Err(mpsc::error::TrySendError::Closed(_)) => {
-                Err(sentra_core::SentraError::Ipc(
+                Err(sentra_core::SentraError::Channel(
                     "priority queue channel closed".into(),
                 ))
             }
@@ -154,7 +154,7 @@ impl<T: Send + 'static> PriorityQueue<T> {
                 && self.normal.tx.is_closed()
                 && self.low.tx.is_closed()
             {
-                return Err(sentra_core::SentraError::Ipc(
+                return Err(sentra_core::SentraError::Channel(
                     "all priority queue channels closed".into(),
                 ));
             }
@@ -225,7 +225,7 @@ impl<T: Send + 'static> PriorityQueue<T> {
                             );
                         }
                         Err(mpsc::error::TrySendError::Closed(_)) => {
-                            return Err(sentra_core::SentraError::Ipc(
+                            return Err(sentra_core::SentraError::Channel(
                                 "priority queue channel closed".into(),
                             ));
                         }

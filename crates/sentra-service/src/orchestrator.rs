@@ -20,7 +20,7 @@ impl SentraOrchestrator {
 
         // 1. Setup IPC and Event Bus
         let event_bus = EventBus::new(self.config.telemetry.channel_capacity);
-        let (_telemetry_tx, _telemetry_rx) = BoundedChannel::new(
+        let (_telemetry_tx, _telemetry_rx) = BoundedChannel::new::<sentra_core::TelemetryEvent>(
             self.config.telemetry.channel_capacity,
             "telemetry_stream".to_string(),
         );

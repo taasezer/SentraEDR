@@ -52,7 +52,7 @@ impl EventBus {
     pub fn publish(&self, event: TelemetryEvent) -> sentra_core::Result<()> {
         self.sender.send(event).map_err(|_| {
             warn!("EventBus publish failed: no active receivers");
-            sentra_core::SentraError::Ipc("EventBus has no active receivers".into())
+            sentra_core::SentraError::Channel("EventBus has no active receivers".into())
         })?;
         Ok(())
     }

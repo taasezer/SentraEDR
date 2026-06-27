@@ -17,13 +17,11 @@
 
 /// Unified error types for the SentraEDR platform.
 pub mod error;
-
-/// Shared domain types — telemetry events, detection results,
-/// remediation actions, and system-health snapshots.
 pub mod types;
-
-/// Core traits that define the EDR processing pipeline boundaries.
 pub mod traits;
-
-/// TOML-based hierarchical configuration.
 pub mod config;
+
+pub use error::*;
+pub use types::*;
+pub use traits::*;
+pub use config::*;

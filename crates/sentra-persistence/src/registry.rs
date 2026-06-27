@@ -45,7 +45,7 @@ pub fn scan_registry_persistence() -> Result<Vec<RegistryPersistenceEntry>> {
                             entries.push(RegistryPersistenceEntry {
                                 hive: hive_name.to_string(),
                                 key_path: path.to_string(),
-                                value_name: name.to_string_lossy(),
+                                value_name: name.to_string(),
                                 value_data: val_str,
                                 entry_type: p_type.clone(),
                             });

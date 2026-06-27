@@ -4,7 +4,7 @@ use orchestrator::SentraOrchestrator;
 use sentra_core::{Result, SentraConfig};
 use std::ffi::OsString;
 use tracing::info;
-use windows_service::service_dispatcher;
+use windows_service::{define_windows_service, service_dispatcher};
 
 define_windows_service!(ffi_service_main, sentra_service_main);
 
@@ -52,22 +52,4 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-#[macro_export]
-macro_rules! define_windows_service {
-    ($ffi_name:ident, $rust_name:ident) => {
-        #[allow(non_snake_case)]
-        #[no_mangle]
-        pub extern "system" fn $ffi_name(
-            dw_num_services_args: u32,
-            lp_service_arg_vectors: *mut *mut u16,
-        ) {
-            let args = unsafe {
-                windows_service::os_string_array_to_vec(
-                    dw_num_services_args,
-                    lp_service_arg_vectors,
-                )
-            };
-            $rust_name(args);
-        }
-    };
-}
+

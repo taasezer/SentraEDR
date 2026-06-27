@@ -10,7 +10,7 @@ use windows::Win32::System::Threading::{OpenProcess, OpenProcessToken, PROCESS_Q
 
 pub fn enumerate_processes() -> Result<Vec<ProcessInfo>> {
     let mut sys = System::new_all();
-    sys.refresh_processes();
+    sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
 
     let mut processes = Vec::new();
 
@@ -42,7 +42,7 @@ pub fn enumerate_processes() -> Result<Vec<ProcessInfo>> {
                         if let Some(path) = p.exe() {
                             exe_path = path.to_string_lossy().into_owned();
                         }
-                        cmdline = p.cmd().join(" ");
+                        cmdline = p.cmd().iter().map(|s| s.to_string_lossy().into_owned()).collect::<Vec<_>>().join(" ");
                         if let Some(u) = p.user_id() {
                             user = u.to_string();
                         }
