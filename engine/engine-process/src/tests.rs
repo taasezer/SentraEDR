@@ -1,13 +1,13 @@
 #[cfg(test)]
 mod tests {
     use crate::analyzer::ProcessAnalyzer;
-    use shared_models::events::{NormalizedTelemetryEvent, EventType};
+    use shared_models::events::{EventType, NormalizedTelemetryEvent};
     use uuid::Uuid;
 
     #[test]
     fn test_cache_hit_and_immutability() {
         let mut analyzer = ProcessAnalyzer::new();
-        
+
         let create_event = NormalizedTelemetryEvent {
             event_id: Uuid::new_v4(),
             schema_version: 1,

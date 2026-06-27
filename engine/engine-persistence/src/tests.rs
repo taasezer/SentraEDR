@@ -2,17 +2,22 @@
 mod tests {
     use super::*;
     use crate::analyzer::PersistenceAnalyzer;
-    use crate::source::PersistenceProvider;
-    use crate::models::{PersistenceIdentity, PersistenceSnapshot, PersistenceMetadata};
     use crate::errors::PersistenceEngineError;
-    use shared_models::events::{NormalizedTelemetryEvent, EventType};
+    use crate::models::{PersistenceIdentity, PersistenceMetadata, PersistenceSnapshot};
+    use crate::source::PersistenceProvider;
+    use shared_models::events::{EventType, NormalizedTelemetryEvent};
     use uuid::Uuid;
 
     struct MockProvider;
 
     impl PersistenceProvider for MockProvider {
-        fn provider_type(&self) -> &str { "Mock" }
-        fn query(&self, identity: &PersistenceIdentity) -> Result<Option<PersistenceSnapshot>, PersistenceEngineError> {
+        fn provider_type(&self) -> &str {
+            "Mock"
+        }
+        fn query(
+            &self,
+            identity: &PersistenceIdentity,
+        ) -> Result<Option<PersistenceSnapshot>, PersistenceEngineError> {
             Ok(Some(PersistenceSnapshot {
                 identity: identity.clone(),
                 metadata: PersistenceMetadata {
@@ -41,7 +46,7 @@ mod tests {
             event_type: EventType::Unknown,
             metadata: std::collections::HashMap::new(),
         };
-        
+
         let change = analyzer.process_event(&event);
         assert!(change.is_some());
     }

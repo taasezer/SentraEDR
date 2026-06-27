@@ -1,3 +1,3 @@
-pub mod models;
-pub mod event_bus;
 pub mod command_bus;
+pub mod event_bus;
+pub mod models;

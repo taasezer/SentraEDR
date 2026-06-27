@@ -1,7 +1,7 @@
-use std::ops::Drop;
-use windows::Win32::Foundation::{HANDLE, CloseHandle};
-use windows::Win32::System::Threading::{OpenProcess, PROCESS_QUERY_INFORMATION};
 use crate::errors::ProcessEngineError;
+use std::ops::Drop;
+use windows::Win32::Foundation::{CloseHandle, HANDLE};
+use windows::Win32::System::Threading::{OpenProcess, PROCESS_QUERY_INFORMATION};
 
 /// Strict RAII wrapper for Windows HANDLEs.
 /// Ensures `CloseHandle` is always called when the object goes out of scope.
@@ -30,7 +30,7 @@ impl ProcessQuerySource {
             match handle_result {
                 Ok(h) => Ok(SafeHandle(h)),
                 Err(e) => {
-                    // Win32 ERROR_ACCESS_DENIED is 0x80070005. 
+                    // Win32 ERROR_ACCESS_DENIED is 0x80070005.
                     if e.code().0 == 0x80070005_u32 as i32 {
                         Err(ProcessEngineError::AccessDenied(pid))
                     } else {

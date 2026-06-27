@@ -1,5 +1,5 @@
-pub mod scenario;
-pub mod replay;
+pub mod assertions;
 pub mod failure;
 pub mod mocks;
-pub mod assertions;
+pub mod replay;
+pub mod scenario;

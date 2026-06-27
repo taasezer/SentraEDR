@@ -1,11 +1,13 @@
-use std::collections::HashMap;
-use shared_models::events::{NormalizedTelemetryEvent, EventType};
-use crate::models::{ConnectionIdentity, ConnectionMetadata, ConnectionSnapshot, ConnectionStateChange};
 use crate::metrics::METRICS;
+use crate::models::{
+    ConnectionIdentity, ConnectionMetadata, ConnectionSnapshot, ConnectionStateChange,
+};
+use shared_models::events::{EventType, NormalizedTelemetryEvent};
+use std::collections::HashMap;
 use uuid::Uuid;
 
 /// Lightweight LRU Cache mapping IP addresses to resolved DNS hostnames.
-/// Operates as an optimization layer only. 
+/// Operates as an optimization layer only.
 pub struct DnsCache {
     // In production, this would use a proper LRU crate bounded to ~10,000 entries.
     entries: HashMap<String, String>,
@@ -40,9 +42,16 @@ impl NetworkAnalyzer {
     }
 
     /// Non-blocking event correlation. Consumes normalized network telemetry.
-    pub fn process_event(&mut self, event: &NormalizedTelemetryEvent) -> Option<(ConnectionSnapshot, ConnectionStateChange)> {
+    pub fn process_event(
+        &mut self,
+        event: &NormalizedTelemetryEvent,
+    ) -> Option<(ConnectionSnapshot, ConnectionStateChange)> {
         match &event.event_type {
-            EventType::NetworkConnection { destination_ip, destination_port, protocol } => {
+            EventType::NetworkConnection {
+                destination_ip,
+                destination_port,
+                protocol,
+            } => {
                 let identity = ConnectionIdentity {
                     process_id: event.process_id,
                     process_creation_time_ms: 0, // Would pull from a shared process registry or enriched event

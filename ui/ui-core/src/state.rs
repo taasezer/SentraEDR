@@ -1,5 +1,5 @@
-use ui_models::DashboardState;
 use std::sync::Mutex;
+use ui_models::DashboardState;
 
 pub struct ApplicationState {
     pub dashboard: Mutex<DashboardState>,

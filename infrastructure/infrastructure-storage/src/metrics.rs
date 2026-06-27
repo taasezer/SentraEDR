@@ -17,8 +17,10 @@ impl StorageMetrics {
 
     #[inline(always)]
     pub fn track_flush(&self, latency: u64, count: u64) {
-        self.batch_flush_latency_us.store(latency, Ordering::Relaxed);
-        self.events_persisted_total.fetch_add(count, Ordering::Relaxed);
+        self.batch_flush_latency_us
+            .store(latency, Ordering::Relaxed);
+        self.events_persisted_total
+            .fetch_add(count, Ordering::Relaxed);
     }
 }
 

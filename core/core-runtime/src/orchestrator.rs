@@ -1,5 +1,5 @@
-use thiserror::Error;
 use crate::lifecycle::Service;
+use thiserror::Error;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum RuntimeState {
@@ -16,7 +16,10 @@ pub enum RuntimeState {
 #[derive(Debug, Error)]
 pub enum RuntimeError {
     #[error("Invalid state transition from {from:?} to {to:?}")]
-    InvalidStateTransition { from: RuntimeState, to: RuntimeState },
+    InvalidStateTransition {
+        from: RuntimeState,
+        to: RuntimeState,
+    },
     #[error("Dependency Graph Invalid: {0}")]
     GraphInvalid(String),
 }
@@ -27,7 +30,9 @@ pub struct Runtime {
 
 impl Runtime {
     pub fn new() -> Self {
-        Self { state: RuntimeState::Created }
+        Self {
+            state: RuntimeState::Created,
+        }
     }
 
     pub fn transition(&mut self, next: RuntimeState) -> Result<(), RuntimeError> {

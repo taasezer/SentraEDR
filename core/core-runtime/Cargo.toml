@@ -8,5 +8,6 @@ authors.workspace = true
 core-registry = { path = "../core-registry" }
 core-eventbus = { path = "../core-eventbus" }
 tokio.workspace = true
+async-trait.workspace = true
 tokio-util.workspace = true
 thiserror.workspace = true

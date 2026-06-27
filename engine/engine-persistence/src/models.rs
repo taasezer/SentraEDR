@@ -20,7 +20,10 @@ pub struct PersistenceMetadata {
 #[derive(Debug, Clone)]
 pub enum PersistenceStateChange {
     Added,
-    Modified { old_target: String, new_target: String },
+    Modified {
+        old_target: String,
+        new_target: String,
+    },
     Deleted,
 }
 

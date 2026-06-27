@@ -9,3 +9,5 @@ shared-models.workspace = true
 tokio.workspace = true
 windows.workspace = true
 chrono.workspace = true
+crossbeam-channel.workspace = true
+serde_json.workspace = true

@@ -6,3 +6,5 @@ authors.workspace = true
 
 [dependencies]
 thiserror.workspace = true
+uuid.workspace = true
+chrono.workspace = true

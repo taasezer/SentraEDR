@@ -1,5 +1,5 @@
-pub mod models;
-pub mod registry;
 pub mod context;
-pub mod scheduler;
+pub mod models;
 pub mod profiler;
+pub mod registry;
+pub mod scheduler;

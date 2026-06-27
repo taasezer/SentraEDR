@@ -1,7 +1,7 @@
-use shared_models::events::NormalizedTelemetryEvent;
+use crate::metrics::METRICS;
 use crate::models::Alert;
 use crate::rules::Rule;
-use crate::metrics::METRICS;
+use shared_models::events::NormalizedTelemetryEvent;
 use std::collections::VecDeque;
 
 /// Bounded, searchable memory state for event correlation.
@@ -51,7 +51,11 @@ pub struct DetectionPipeline {
 
 impl DetectionPipeline {
     pub fn new(rules: Vec<Box<dyn Rule>>) -> Self {
-        let max_ttl = rules.iter().map(|r| r.max_correlation_window_ms()).max().unwrap_or(0);
+        let max_ttl = rules
+            .iter()
+            .map(|r| r.max_correlation_window_ms())
+            .max()
+            .unwrap_or(0);
         Self {
             state: CorrelationState::new(50_000), // Hard memory budget
             rules,
@@ -62,15 +66,16 @@ impl DetectionPipeline {
     /// Orchestrates Intake -> Cleanup -> Correlation -> Evaluation -> Risk -> Confidence -> Alert Generation.
     pub fn process_event(&mut self, event: NormalizedTelemetryEvent) -> Vec<Alert> {
         let current_time = event.timestamp_ms;
-        
+
         // 1. Intake
         self.state.intake(event);
-        
+
         // 2. Correlation Cleanup (Bounding state based on Rule TTLs)
-        self.state.cleanup_expired(current_time, self.max_global_ttl_ms);
-        
+        self.state
+            .cleanup_expired(current_time, self.max_global_ttl_ms);
+
         let mut alerts = Vec::new();
-        
+
         // 3. Rule Evaluation (which internally handles Risk and Confidence)
         for rule in &self.rules {
             if let Some(alert) = rule.evaluate(&self.state) {
@@ -78,7 +83,7 @@ impl DetectionPipeline {
                 alerts.push(alert);
             }
         }
-        
+
         alerts
     }
 }

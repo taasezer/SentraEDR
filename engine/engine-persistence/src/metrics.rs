@@ -20,7 +20,8 @@ impl PersistenceMetrics {
     #[inline(always)]
     pub fn record_comparison_latency(&self, _latency: u64) {
         // In a real app this would use relaxed atomic max/avg or histograms.
-        self.snapshot_comparison_latency_us.fetch_add(1, Ordering::Relaxed);
+        self.snapshot_comparison_latency_us
+            .fetch_add(1, Ordering::Relaxed);
     }
 }
 

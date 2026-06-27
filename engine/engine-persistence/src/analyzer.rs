@@ -1,9 +1,9 @@
+use crate::metrics::METRICS;
 use crate::models::{PersistenceIdentity, PersistenceSnapshot, PersistenceStateChange};
 use crate::source::PersistenceProvider;
-use crate::metrics::METRICS;
 use shared_models::events::NormalizedTelemetryEvent;
 
-/// Core analysis loop for persistence events. 
+/// Core analysis loop for persistence events.
 /// Combines modular providers and explicit snapshot comparisons.
 pub struct PersistenceAnalyzer {
     providers: Vec<Box<dyn PersistenceProvider>>,
@@ -17,19 +17,22 @@ impl PersistenceAnalyzer {
     }
 
     /// Evaluates an incoming NormalizedTelemetryEvent (e.g., from ETW).
-    pub fn process_event(&mut self, _event: &NormalizedTelemetryEvent) -> Option<PersistenceStateChange> {
+    pub fn process_event(
+        &mut self,
+        _event: &NormalizedTelemetryEvent,
+    ) -> Option<PersistenceStateChange> {
         // 1. Check if the event maps to a known persistence mechanism.
         // 2. Identify the correct PersistenceIdentity.
         // 3. Query the provider for the exact snapshot.
         // 4. Compare the snapshot against the known previous state.
-        
+
         let start = std::time::Instant::now();
-        
+
         // Simulating a change detection:
         let change = PersistenceStateChange::Added;
-        
+
         METRICS.record_comparison_latency(start.elapsed().as_micros() as u64);
-        
+
         Some(change)
     }
 

@@ -12,7 +12,7 @@ pub struct Evidence {
 pub struct Alert {
     pub alert_id: Uuid,
     pub rule_id: String,
-    pub severity: u8, // 1-100 Risk Score
+    pub severity: u8,   // 1-100 Risk Score
     pub confidence: u8, // 1-100 Confidence Score
     pub timestamp_ms: u64,
     pub related_process_id: Option<u32>, // Tied to ProcessIdentity conceptually

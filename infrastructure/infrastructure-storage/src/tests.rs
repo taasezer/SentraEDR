@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::models::PersistedEvent;
     use crate::pipeline::StoragePipeline;
     use crate::providers::InMemoryStorageProvider;
-    use crate::models::PersistedEvent;
     use std::sync::Arc;
     use uuid::Uuid;
 
@@ -33,7 +33,7 @@ mod tests {
 
         // Yield execution so the spawned task can process the batch
         tokio::task::yield_now().await;
-        
+
         // No explicit assertion needed; the test proves the enqueue does not deadlock or panic.
     }
 }

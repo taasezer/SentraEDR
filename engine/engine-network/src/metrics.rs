@@ -22,10 +22,14 @@ impl NetworkMetrics {
     }
 
     #[inline(always)]
-    pub fn inc_cache_hit(&self) { self.cache_hits.fetch_add(1, Ordering::Relaxed); }
+    pub fn inc_cache_hit(&self) {
+        self.cache_hits.fetch_add(1, Ordering::Relaxed);
+    }
 
     #[inline(always)]
-    pub fn inc_cache_miss(&self) { self.cache_misses.fetch_add(1, Ordering::Relaxed); }
+    pub fn inc_cache_miss(&self) {
+        self.cache_misses.fetch_add(1, Ordering::Relaxed);
+    }
 }
 
 pub static METRICS: NetworkMetrics = NetworkMetrics::new();

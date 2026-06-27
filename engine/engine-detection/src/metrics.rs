@@ -21,7 +21,8 @@ impl DetectionMetrics {
 
     #[inline(always)]
     pub fn track_active_correlations(&self, count: u64) {
-        self.active_correlation_count.store(count, Ordering::Relaxed);
+        self.active_correlation_count
+            .store(count, Ordering::Relaxed);
     }
 }
 

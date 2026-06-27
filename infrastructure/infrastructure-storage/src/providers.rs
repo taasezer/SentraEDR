@@ -1,13 +1,17 @@
-use crate::models::PersistedEvent;
 use crate::errors::StorageError;
+use crate::models::PersistedEvent;
 
 #[async_trait::async_trait]
 pub trait StorageProvider: Send + Sync {
     /// Atomic batch insertion of events.
     async fn write_batch(&self, events: &[PersistedEvent]) -> Result<(), StorageError>;
-    
+
     /// Queries events by timestamp range (Read Model).
-    async fn query_range(&self, start_ms: u64, end_ms: u64) -> Result<Vec<PersistedEvent>, StorageError>;
+    async fn query_range(
+        &self,
+        start_ms: u64,
+        end_ms: u64,
+    ) -> Result<Vec<PersistedEvent>, StorageError>;
 }
 
 /// A repository interface to prevent engines from leaking SQL dependencies.
@@ -33,7 +37,11 @@ impl StorageProvider for InMemoryStorageProvider {
         Ok(())
     }
 
-    async fn query_range(&self, _start_ms: u64, _end_ms: u64) -> Result<Vec<PersistedEvent>, StorageError> {
+    async fn query_range(
+        &self,
+        _start_ms: u64,
+        _end_ms: u64,
+    ) -> Result<Vec<PersistedEvent>, StorageError> {
         Ok(Vec::new())
     }
 }

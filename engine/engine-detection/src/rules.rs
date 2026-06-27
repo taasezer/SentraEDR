@@ -5,7 +5,7 @@ use crate::pipeline::CorrelationState;
 pub trait Rule {
     /// Unique identifier (e.g., "EDR-NET-001")
     fn rule_id(&self) -> &str;
-    
+
     /// The maximum historical context this rule needs to evaluate successfully.
     /// The Correlation Pipeline will use the maximum of all active rules to enforce bounds.
     fn max_correlation_window_ms(&self) -> u64;

@@ -8,7 +8,7 @@ pub struct ComponentManifest {
     pub health_checks: Vec<String>,
     pub required_configuration: Vec<String>,
     pub supported_platforms: Vec<String>,
-    
+
     // Phase 10 additions
     pub startup_priority: u32,
     pub shutdown_priority: u32,

@@ -1,6 +1,6 @@
-use tokio::sync::broadcast;
 use crate::models::EventMessage;
 use std::sync::Arc;
+use tokio::sync::broadcast;
 
 pub struct EventBus<T: EventMessage> {
     sender: broadcast::Sender<Arc<T>>,

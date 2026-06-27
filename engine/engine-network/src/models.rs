@@ -1,9 +1,9 @@
 use uuid::Uuid;
-// We would ideally import `ProcessIdentity` from `engine-process`, but since engines must be independent, 
+// We would ideally import `ProcessIdentity` from `engine-process`, but since engines must be independent,
 // they can only share models through `shared-models`.
 // So we define a local proxy or expect `shared-models` to host the canonical `ProcessIdentity`.
 // Since the instruction says "consume only shared models", we will assume the Detection engine joins them.
-// But the user requested "ProcessIdentity" inside ConnectionIdentity. 
+// But the user requested "ProcessIdentity" inside ConnectionIdentity.
 // We will represent the ProcessIdentity fields directly or assume it's passed from the event.
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]

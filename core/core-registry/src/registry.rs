@@ -1,5 +1,5 @@
+use crate::models::{Capability, CapabilityId};
 use std::collections::HashMap;
-use crate::models::{CapabilityId, Capability};
 
 pub struct CapabilityRegistry {
     capabilities: HashMap<String, Box<dyn Capability>>,
@@ -29,7 +29,10 @@ impl CapabilityRegistry {
         for (id, cap) in &self.capabilities {
             for dep in &cap.metadata().dependencies {
                 if !self.capabilities.contains_key(&dep.0) {
-                    return Err(format!("Capability {} depends on missing capability {}", id, dep.0));
+                    return Err(format!(
+                        "Capability {} depends on missing capability {}",
+                        id, dep.0
+                    ));
                 }
             }
         }

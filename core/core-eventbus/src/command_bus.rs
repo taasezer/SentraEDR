@@ -1,5 +1,5 @@
-use tokio::sync::mpsc;
 use crate::models::CommandMessage;
+use tokio::sync::mpsc;
 
 pub struct CommandBus<T: CommandMessage> {
     sender: mpsc::Sender<T>,

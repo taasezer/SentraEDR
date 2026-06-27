@@ -1,6 +1,6 @@
-use shared_models::events::{NormalizedTelemetryEvent, EventType};
-use crate::models::{ProcessIdentity, ProcessMetadata, ProcessSnapshot};
 use crate::metrics::METRICS;
+use crate::models::{ProcessIdentity, ProcessMetadata, ProcessSnapshot};
+use shared_models::events::{EventType, NormalizedTelemetryEvent};
 use std::collections::HashMap;
 
 /// An extremely simplified LRU/Cache mapping PID to known static metadata.
@@ -23,7 +23,7 @@ impl ProcessCache {
     pub fn get(&self, pid: u32) -> Option<&ProcessMetadata> {
         self.entries.get(&pid)
     }
-    
+
     pub fn tombstone(&mut self, pid: u32) {
         self.entries.remove(&pid);
     }
@@ -52,11 +52,14 @@ impl ProcessAnalyzer {
 
         // Cache Management
         match &event.event_type {
-            EventType::ProcessCreate { image_path, command_line } => {
+            EventType::ProcessCreate {
+                image_path,
+                command_line,
+            } => {
                 let meta = ProcessMetadata {
                     image_path: image_path.clone(),
                     command_line: command_line.clone(),
-                    session_id: 0, // Mocked OS query
+                    session_id: 0,                            // Mocked OS query
                     initial_user_sid: "S-1-5-18".to_string(), // Mocked OS query
                 };
                 self.cache.insert(event.process_id, meta);
@@ -74,7 +77,7 @@ impl ProcessAnalyzer {
             cached.clone()
         } else {
             METRICS.inc_miss();
-            // In a real system, this triggers `ProcessQuerySource::open_process` 
+            // In a real system, this triggers `ProcessQuerySource::open_process`
             // and retrieves the metadata dynamically.
             ProcessMetadata {
                 image_path: "UNKNOWN".to_string(),

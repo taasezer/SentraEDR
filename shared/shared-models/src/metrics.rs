@@ -22,11 +22,17 @@ impl InfrastructureMetrics {
     }
 
     #[inline(always)]
-    pub fn inc_processed(&self) { self.events_processed.fetch_add(1, Ordering::Relaxed); }
-    
+    pub fn inc_processed(&self) {
+        self.events_processed.fetch_add(1, Ordering::Relaxed);
+    }
+
     #[inline(always)]
-    pub fn inc_failures(&self) { self.processing_failures.fetch_add(1, Ordering::Relaxed); }
-    
+    pub fn inc_failures(&self) {
+        self.processing_failures.fetch_add(1, Ordering::Relaxed);
+    }
+
     #[inline(always)]
-    pub fn inc_overflows(&self) { self.queue_overflow_count.fetch_add(1, Ordering::Relaxed); }
+    pub fn inc_overflows(&self) {
+        self.queue_overflow_count.fetch_add(1, Ordering::Relaxed);
+    }
 }

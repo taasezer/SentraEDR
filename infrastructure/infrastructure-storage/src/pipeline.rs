@@ -1,8 +1,8 @@
-use tokio::sync::mpsc;
-use std::sync::Arc;
+use crate::metrics::METRICS;
 use crate::models::PersistedEvent;
 use crate::providers::StorageProvider;
-use crate::metrics::METRICS;
+use std::sync::Arc;
+use tokio::sync::mpsc;
 
 pub struct StoragePipeline {
     sender: mpsc::Sender<PersistedEvent>,
@@ -10,11 +10,11 @@ pub struct StoragePipeline {
 
 impl StoragePipeline {
     /// Initializes the asynchronous storage worker thread.
-    /// This thread is responsible for pulling from the mpsc channel, 
+    /// This thread is responsible for pulling from the mpsc channel,
     /// validating, batching, persisting, and verifying.
     pub fn start(provider: Arc<dyn StorageProvider>, batch_size: usize) -> Self {
         let (tx, mut rx) = mpsc::channel::<PersistedEvent>(10_000);
-        
+
         tokio::spawn(async move {
             let mut batch = Vec::with_capacity(batch_size);
 

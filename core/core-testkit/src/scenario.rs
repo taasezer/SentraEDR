@@ -16,7 +16,7 @@ impl ScenarioRunner {
     pub fn new() -> Self {
         Self {}
     }
-    
+
     pub fn run_scenario(&self, _scenario: &Scenario) -> Result<(), String> {
         // Runs the scenario against the runtime and compares expected outputs
         Ok(())

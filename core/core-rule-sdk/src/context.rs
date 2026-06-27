@@ -1,6 +1,6 @@
+use core_runtime::clock::Clock;
 use std::sync::Arc;
 use tokio_util::sync::CancellationToken;
-use core_runtime::clock::Clock;
 
 pub struct RuleExecutionContext {
     pub clock: Arc<dyn Clock>,

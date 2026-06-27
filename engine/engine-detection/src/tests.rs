@@ -1,24 +1,30 @@
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pipeline::DetectionPipeline;
-    use crate::rules::Rule;
     use crate::models::{Alert, Evidence};
     use crate::pipeline::CorrelationState;
-    use shared_models::events::{NormalizedTelemetryEvent, EventType};
+    use crate::pipeline::DetectionPipeline;
+    use crate::rules::Rule;
+    use shared_models::events::{EventType, NormalizedTelemetryEvent};
     use uuid::Uuid;
 
     struct ShortLivedRule;
     impl Rule for ShortLivedRule {
-        fn rule_id(&self) -> &str { "TEST-001" }
-        fn max_correlation_window_ms(&self) -> u64 { 1000 } // 1 second
-        fn evaluate(&self, _state: &CorrelationState) -> Option<Alert> { None }
+        fn rule_id(&self) -> &str {
+            "TEST-001"
+        }
+        fn max_correlation_window_ms(&self) -> u64 {
+            1000
+        } // 1 second
+        fn evaluate(&self, _state: &CorrelationState) -> Option<Alert> {
+            None
+        }
     }
 
     #[test]
     fn test_correlation_cleanup_enforcement() {
         let mut pipeline = DetectionPipeline::new(vec![Box::new(ShortLivedRule)]);
-        
+
         // Event at T=1000
         pipeline.process_event(NormalizedTelemetryEvent {
             event_id: Uuid::new_v4(),
@@ -42,7 +48,7 @@ mod tests {
         });
 
         // Pipeline state should only hold the second event
-        // Note: the test cannot directly read `pipeline.state.events` if it's private, 
+        // Note: the test cannot directly read `pipeline.state.events` if it's private,
         // but we assume pub for the sake of the mock test structure here.
     }
 }
