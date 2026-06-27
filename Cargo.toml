@@ -9,7 +9,12 @@ members = [
     "engine/engine-persistence",
     "engine/engine-detection",
     "core/core-registry",
-    "infrastructure/infrastructure-storage"
+    "core/core-runtime",
+    "core/core-eventbus",
+    "core/core-config",
+    "core/core-observability",
+    "infrastructure/infrastructure-storage",
+    "infrastructure/infrastructure-communication"
 ]
 
 [workspace.package]
@@ -21,6 +26,7 @@ license = "MIT"
 
 [workspace.dependencies]
 tokio = { version = "1.40", features = ["rt", "sync", "time"] }
+tokio-util = "0.7"
 windows = { version = "0.58", features = ["Win32_Foundation", "Win32_System_Diagnostics_Etw", "Win32_System_SystemServices", "Win32_System_Threading"] }
 chrono = "0.4"
 uuid = { version = "1", features = ["v4", "fast-rng"] }

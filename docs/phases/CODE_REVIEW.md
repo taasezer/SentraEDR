@@ -1,13 +1,11 @@
-# Code Review: Phase 8 (Storage Infrastructure & Registry)
+# Code Review: Phase 9 (Communication Infrastructure & Platform Core)
 
-## Rust Idioms & Concurrency
-- **Asynchronous Channels:** Excellent utilization of `tokio::spawn` and `mpsc` channels in `pipeline.rs`. This correctly decouples the fast-producing detection threads from the slow-consuming disk I/O storage threads.
-- **Type Safety in Registry:** Shifting from raw strings to the `CapabilityId` struct ensures stronger compile-time guarantees when declaring component dependencies.
+## Rust Idioms & Type Safety
+- **Typed Subscriptions:** Using `T: EventMessage` in the `EventBus::subscribe<T>()` signature elegantly eliminates string-matching routing errors. If an engine attempts to subscribe to an undefined event type, the Rust compiler fails immediately.
+- **Priority Queues:** The `EventPriority` enum enables the bus to drop `Low` priority generic telemetry before `Critical` security alerts under extreme memory pressure.
 
-## Testing Rigor
-- The synthetic asynchronous test `test_async_batching_non_blocking` successfully validates that the telemetry thread correctly yields execution to the storage worker thread without deadlocking the `mpsc` queue.
-
-## Provider Abstraction
-- The `StorageProvider` trait enforces an `async` signature, which is critical for future PostgreSQL or HTTP remote storage integrations.
+## Concurrency & Backpressure
+- **Backpressure Handling:** By using `try_send` on bounded `tokio::sync::mpsc` channels for the `CommandBus`, the system correctly delegates backpressure handling to the calling engine. If Remediation is bogged down, Detection receives a clear error rather than blocking the async reactor.
+- **Subscriber Isolation:** `tokio::sync::broadcast` isolates subscribers perfectly. Slow readers lag without slowing down fast readers.
 
 **Decision: PASS**

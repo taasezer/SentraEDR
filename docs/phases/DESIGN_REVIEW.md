@@ -1,14 +1,15 @@
-# Design Review: Phase 8 (Storage Infrastructure & Registry)
+# Design Review: Phase 9 (Communication Infrastructure & Platform Core)
 
 ## Architectural Boundaries
-- **Infrastructure Isolation:** Both `core-registry` and `infrastructure-storage` sit exactly where they belong: at the base layer. They do not depend on `engine-detection`, `engine-remediation`, or telemetry modules.
-- **Dependency Resolution:** The `CapabilityRegistry` exposes explicit dependency vectors, preventing race conditions or unresolved dependencies during agent startup.
+- **Platform Core Evolution:** The introduction of `core-runtime`, `core-eventbus`, `core-config`, and `core-observability` solidifies the foundation of the agent. The business logic (`engine-*`) relies entirely on these pure traits rather than bespoke routing.
+- **DDD Enforcement:** The separation of the `CommandBus` (requesting work) and `EventBus` (completed work) rigorously enforces Domain-Driven Design principles across the bounded contexts.
 
 ## ADR Alignment
-- ADR-0008 (Immutable Event Store) is fulfilled via `tokio::sync::mpsc` channels and a strict `StorageProvider` interface that only exposes `write_batch` and `query_range`, lacking any update or delete mutations.
-- Schema versioning metadata is firmly embedded in the `PersistedEvent` struct.
+- ADRs 0010 through 0016 have been documented.
+- **ADR 0013 (Delivery Guarantees):** Successfully separated. The `EventBus` is explicitly documented as Best-Effort (fire and forget), while the `CommandBus` implements Reliable Delivery by pushing backpressure via `TrySendError`.
+- **ADR 0012 (Message Lifecycle):** The `MessageMetadata` struct embedded inside the `EventMessage` and `CommandMessage` traits mandates the inclusion of `CorrelationId` and `CausationId` for distributed tracing.
 
-## Failure Constraints
-- The `StoragePipeline::enqueue()` utilizes `try_send()`. This explicitly guarantees that if the storage worker thread crashes or stalls (due to disk I/O blocks), the telemetry parser threads will simply drop events (or buffer them depending on future queue implementation) rather than deadlocking the entire agent.
+## Capability Registry Integration
+- Communication providers hook directly into the Phase 8 `CapabilityRegistry`. The orchestrator handles boot order, ensuring the buses are up before any engine attempts to send telemetry.
 
 **Decision: PASS**

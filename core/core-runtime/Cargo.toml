@@ -1,0 +1,12 @@
+[package]
+name = "core-runtime"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+core-registry = { path = "../core-registry" }
+core-eventbus = { path = "../core-eventbus" }
+tokio.workspace = true
+tokio-util.workspace = true
+thiserror.workspace = true
