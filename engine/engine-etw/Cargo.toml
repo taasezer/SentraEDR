@@ -11,3 +11,4 @@ windows.workspace = true
 chrono.workspace = true
 crossbeam-channel.workspace = true
 serde_json.workspace = true
+uuid.workspace = true

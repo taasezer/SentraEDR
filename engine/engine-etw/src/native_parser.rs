@@ -1,5 +1,5 @@
 use crossbeam_channel::Sender;
-use shared_models::telemetry::NormalizedTelemetryEvent;
+use shared_models::events::NormalizedTelemetryEvent;
 use std::sync::OnceLock;
 use windows::Win32::System::Diagnostics::Etw::{EVENT_HEADER, EVENT_RECORD};
 
@@ -26,16 +26,13 @@ pub extern "system" fn event_record_callback(record: *mut EVENT_RECORD) {
     // Dispatch the raw event immediately into the bounded channel.
     if let Some(sender) = EVENT_SENDER.get() {
         let event = NormalizedTelemetryEvent {
-            timestamp: chrono::Utc::now(),
-            sensor_id: "etw-kernel".to_string(),
-            event_type: format!("Provider: {:?} EventId: {}", provider_id, event_id),
+            event_id: uuid::Uuid::new_v4(),
+            schema_version: 1,
+            timestamp_ms: chrono::Utc::now().timestamp_millis() as u64,
             process_id,
-            parent_process_id: 0,
-            image_path: String::new(), // In a real parser we use TdhGetProperty
-            command_line: None,
-            user_sid: None,
-            severity: 1,
-            payload: serde_json::json!({"raw_event_id": event_id}),
+            parent_process_id: Some(0),
+            event_type: shared_models::events::EventType::Unknown,
+            metadata: std::collections::HashMap::new(),
         };
 
         // We use try_send to explicitly drop events if the Tokio consumer is lagging.

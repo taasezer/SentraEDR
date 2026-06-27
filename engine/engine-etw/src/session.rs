@@ -1,15 +1,17 @@
 use crate::native_parser::{event_record_callback, EVENT_SENDER};
 use crossbeam_channel::{bounded, Receiver};
-use shared_models::telemetry::NormalizedTelemetryEvent;
+use shared_models::events::NormalizedTelemetryEvent;
 use std::mem::size_of;
 use std::ptr;
 use std::thread;
-use windows::core::{GUID, PCWSTR};
+use windows::core::{GUID, PCWSTR, PWSTR};
 use windows::Win32::System::Diagnostics::Etw::{
-    CloseTrace, EnableTraceEx2, OpenTraceW, ProcessTrace, StartTraceW,
-    EVENT_CONTROL_CODE_ENABLE_PROVIDER, EVENT_TRACE_LOGFILEW, EVENT_TRACE_PROPERTIES,
-    EVENT_TRACE_REAL_TIME_MODE, EVENT_TRACE_SYSTEM_LOGGER_MODE, PROCESS_TRACE_MODE_EVENT_RECORD,
-    PROCESS_TRACE_MODE_REAL_TIME, TRACE_LEVEL_INFORMATION, WNODE_HEADER,
+    StartTraceW, OpenTraceW, ProcessTrace, EnableTraceEx2, CloseTrace, ControlTraceW,
+    EVENT_TRACE_LOGFILEW, EVENT_TRACE_PROPERTIES, 
+    PROCESS_TRACE_MODE_REAL_TIME, PROCESS_TRACE_MODE_EVENT_RECORD,
+    EVENT_TRACE_REAL_TIME_MODE, EVENT_TRACE_SYSTEM_LOGGER_MODE,
+    TRACE_LEVEL_INFORMATION, EVENT_CONTROL_CODE_ENABLE_PROVIDER, WNODE_HEADER,
+    EVENT_TRACE_CONTROL_STOP
 };
 
 // Microsoft-Windows-Kernel-Process GUID
@@ -52,7 +54,7 @@ impl EtwSession {
             properties.Wnode.ClientContext = 1; // QPC clock resolution
             properties.LogFileMode = EVENT_TRACE_REAL_TIME_MODE;
 
-            let session_name = "SentraEDR_Trace_Session\0"
+            let mut session_name = "SentraEDR_Trace_Session\0"
                 .encode_utf16()
                 .collect::<Vec<u16>>();
             properties.LoggerNameOffset = size_of::<EVENT_TRACE_PROPERTIES>() as u32;
@@ -67,15 +69,25 @@ impl EtwSession {
                 );
             }
 
-            let mut trace_handle = windows::Win32::Foundation::HANDLE::default();
+            let mut trace_handle = windows::Win32::System::Diagnostics::Etw::CONTROLTRACE_HANDLE::default();
+            
+            // First, attempt to stop any orphaned session with the same name.
+            // We ignore the result because it will fail if the session doesn't exist.
+            unsafe {
+                ControlTraceW(
+                    windows::Win32::System::Diagnostics::Etw::CONTROLTRACE_HANDLE::default(),
+                    PCWSTR(session_name.as_ptr()),
+                    properties,
+                    EVENT_TRACE_CONTROL_STOP
+                );
+            }
 
             // Start the trace
-            let status = unsafe {
-                StartTraceW(&mut trace_handle, PCWSTR(session_name.as_ptr()), properties)
+            let status = unsafe { 
+                StartTraceW(&mut trace_handle, PCWSTR(session_name.as_ptr()), properties) 
             };
-
-            if status.is_err() && status.0 .0 != windows::Win32::Foundation::ERROR_ALREADY_EXISTS.0
-            {
+            
+            if status.is_err() {
                 eprintln!("Failed to start trace: {:?}", status);
                 return;
             }
@@ -85,12 +97,9 @@ impl EtwSession {
                 EnableTraceEx2(
                     trace_handle,
                     &KERNEL_PROCESS_GUID,
-                    EVENT_CONTROL_CODE_ENABLE_PROVIDER,
+                    EVENT_CONTROL_CODE_ENABLE_PROVIDER.0 as u32,
                     TRACE_LEVEL_INFORMATION as u8,
-                    0,
-                    0,
-                    0,
-                    None,
+                    0, 0, 0, None
                 )
             };
 
@@ -100,10 +109,9 @@ impl EtwSession {
 
             // Open the trace for consumption
             let mut logfile = EVENT_TRACE_LOGFILEW::default();
-            logfile.LoggerName = PCWSTR(session_name.as_ptr());
-            logfile.ProcessTraceMode =
-                PROCESS_TRACE_MODE_REAL_TIME | PROCESS_TRACE_MODE_EVENT_RECORD;
-            logfile.Anonymous1.EventRecordCallback = Some(event_record_callback);
+            logfile.LoggerName = PWSTR(session_name.as_mut_ptr());
+            logfile.Anonymous1.ProcessTraceMode = PROCESS_TRACE_MODE_REAL_TIME | PROCESS_TRACE_MODE_EVENT_RECORD;
+            logfile.Anonymous2.EventRecordCallback = Some(event_record_callback);
 
             let consume_handle = unsafe { OpenTraceW(&mut logfile) };
 

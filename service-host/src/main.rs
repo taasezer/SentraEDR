@@ -28,7 +28,7 @@ async fn main() {
         while let Ok(event) = session.receiver.try_recv() {
             event_count += 1;
             println!(
-                "Received Live OS Event #{} | ProcessId: {} | Details: {}",
+                "Received Live OS Event #{} | ProcessId: {} | Details: {:?}",
                 event_count, event.process_id, event.event_type
             );
         }

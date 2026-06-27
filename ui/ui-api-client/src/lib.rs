@@ -1,14 +1,14 @@
 use core_eventbus::event_bus::EventBus;
+use core_eventbus::models::EventMessage;
 use std::sync::Arc;
-use ui_models::AlertView;
 
-pub struct ApiClient {
+pub struct ApiClient<T: EventMessage + 'static> {
     // Decouples UI from concrete runtime implementations. Allows injecting a MockEventBus
-    event_bus: Arc<dyn EventBus>,
+    event_bus: Arc<EventBus<T>>,
 }
 
-impl ApiClient {
-    pub fn new(event_bus: Arc<dyn EventBus>) -> Self {
+impl<T: EventMessage + 'static> ApiClient<T> {
+    pub fn new(event_bus: Arc<EventBus<T>>) -> Self {
         Self { event_bus }
     }
 
