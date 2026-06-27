@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Shield, Activity, AlertTriangle, Cpu, Radio, ShieldAlert } from 'lucide-react';
+import { Shield, Activity, AlertTriangle, Cpu, ShieldAlert } from 'lucide-react';
 import './App.css';
 
 interface Alert {
