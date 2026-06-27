@@ -225,11 +225,31 @@ Architectural impact:
 
 ## Phase 6: Heuristic Detection Engine
 
-Status: Deferred
+Status: Complete pending user review
 
-Reason:
+Completed:
 
-- Requires multiple signal families for meaningful correlation.
+- Added `engine-detection` crate.
+- Added detection signal family and severity model.
+- Added heuristic severity and family-diversity scoring.
+- Added shared `Finding` generation.
+- Added observe-only `Alert` generation.
+- Added MITRE technique mapping for initial signal names.
+- Added telemetry uncertainty marking for low-confidence signals.
+- Added agent synthetic detection dry run.
+- Added architecture validation rules for `engine-detection`.
+
+Validation:
+
+- Correlation tests cover multi-family high-risk findings, single-signal low-risk findings, and telemetry uncertainty.
+- Agent dry-run test covers observe-only high-risk alert generation.
+- Final Phase 6 command results are recorded in `TEST_RESULTS/phase-6.md`.
+
+Architectural impact:
+
+- `engine-detection` depends only on `shared-models`.
+- `engine-detection` does not import process, persistence, network, ETW, remediation, agent, or UI crates.
+- Alerts remain remediation-ineligible in observe-only mode.
 
 ## Phase 7: Quarantine And Remediation Engine
 

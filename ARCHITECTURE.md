@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 5
+Phase: 6
 
 ## Purpose
 
@@ -66,6 +66,8 @@ The flow is intentionally one-directional for security decisions. Detection may 
 `engine-detection`
 
 - Owns correlation, risk scoring, false-positive suppression, alert generation, and ATT&CK mapping.
+- Phase 6 implements observe-only heuristic signal correlation, family diversity scoring, MITRE mapping, findings, and observe-only alerts.
+- Does not import peer engine crates; it consumes normalized detection input signals and shared schemas.
 - Emits verdicts and alerts, not direct destructive actions.
 
 `engine-remediation`
@@ -179,3 +181,7 @@ Workspace foundations are implemented. `shared-models`, `shared-ipc`, and `sentr
 ## Phase 5 Status
 
 `engine-network` now parses network metadata from normalized telemetry, tracks small in-memory destination history, and emits preliminary observe-only signals for rare external destinations, suspicious DNS patterns, beacon interval candidates, high-risk ports, and IP-literal outbound connections. Packet capture, WFP, ETW TCP/IP sessions, DNS resolver integration, firewall isolation, final detection scoring, remediation, and UI streaming remain deferred.
+
+## Phase 6 Status
+
+`engine-detection` now correlates preliminary signals into scored findings and observe-only alerts. Initial scoring uses severity hints and signal-family diversity across process, persistence, network, and PowerShell families. Alerts remain remediation-ineligible; policy allowlists, advanced false-positive suppression, production rule loading, remediation, and UI workflows remain deferred.

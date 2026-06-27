@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 5
+Phase: 6
 
 ## Performance Goals
 
@@ -94,3 +94,7 @@ Synthetic persistence analysis validates metadata extraction and deterministic s
 ## Phase 5 Status
 
 Synthetic network analysis validates metadata extraction, small destination history updates, and deterministic string matching. The implementation introduces no packet capture, DNS resolver, socket operations, firewall modification, persistent store, regex engine, or unbounded channel. High-volume connection telemetry and beacon statistics remain future work.
+
+## Phase 6 Status
+
+Synthetic detection analysis validates small-batch signal scoring and family diversity correlation. The implementation introduces no rule interpreter, persistent store, unbounded channel, ML model, or remediation path. Large correlation windows and false-positive suppression benchmarks remain future work.
