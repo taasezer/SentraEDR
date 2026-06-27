@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 0
+Phase: 2
 
 ## Purpose
 
@@ -36,6 +36,8 @@ The flow is intentionally one-directional for security decisions. Detection may 
 `engine-etw`
 
 - Owns ETW provider registration, session lifecycle, raw event parsing, and event normalization.
+- Phase 2 implements the portable process-event adapter path: synthetic process start/exit records, normalization into `NormalizedTelemetryEvent`, bounded queue delivery, ingestion counters, and component health.
+- Real Windows ETW session lifecycle and callbacks remain deferred until the portable ingestion path is stable.
 - Does not score threats or remediate.
 
 `engine-process`
@@ -149,3 +151,11 @@ No runtime may synchronously block another runtime. Blocking OS operations are i
 ## Phase 0 Status
 
 Architecture is designed but not implemented. Phase 1 must create the workspace and enforce these boundaries through crate dependencies, compile checks, and CI commands.
+
+## Phase 1 Status
+
+Workspace foundations are implemented. `shared-models`, `shared-ipc`, and `sentra-agent` compile together, and architecture validation enforces the initial dependency direction.
+
+## Phase 2 Status
+
+`engine-etw` now provides observe-only process telemetry ingestion for deterministic tests. The agent runs a synthetic dry run that records two process lifecycle events and logs normalized counts. The implementation intentionally excludes real ETW provider registration, Windows service installation, detection scoring, remediation, and UI streaming.

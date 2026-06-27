@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 0
+Phase: 2
 
 ## Performance Goals
 
@@ -78,3 +78,7 @@ Phase 9:
 ## Phase 0 Status
 
 Performance is specified as design targets. Measurements begin when executable components exist.
+
+## Phase 2 Status
+
+The first executable telemetry path is available through synthetic process ETW records. Validation covers bounded queue delivery, queue pressure, dropped-event accounting, and component health degradation. No real Windows ETW burst benchmark or memory measurement has been claimed yet.

@@ -113,9 +113,7 @@ impl<T> BoundedReceiver<T> {
                 self.metrics.depth.fetch_sub(1, Ordering::Relaxed);
                 Some(value)
             }
-            Err(mpsc::error::TryRecvError::Empty | mpsc::error::TryRecvError::Disconnected) => {
-                None
-            }
+            Err(mpsc::error::TryRecvError::Empty | mpsc::error::TryRecvError::Disconnected) => None,
         }
     }
 

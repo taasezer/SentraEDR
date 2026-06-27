@@ -7,6 +7,8 @@ $forbidden = @(
     @{ Crate = "shared-models"; Pattern = 'path\s*=\s*"\.\./(shared-ipc|sentra-agent)"'; Message = "shared-models must not depend on other Sentra crates" },
     @{ Crate = "shared-ipc"; Pattern = 'path\s*=\s*"\.\./sentra-agent"'; Message = "shared-ipc must not depend on sentra-agent" },
     @{ Crate = "shared-ipc"; Pattern = 'path\s*=\s*"\.\./engine-'; Message = "shared-ipc must not depend on engine crates" },
+    @{ Crate = "engine-etw"; Pattern = 'path\s*=\s*"\.\./(sentra-agent|sentra-ui)"'; Message = "engine-etw must not depend on agent or UI crates" },
+    @{ Crate = "engine-etw"; Pattern = 'path\s*=\s*"\.\./engine-'; Message = "engine-etw must not depend on peer engine crates" },
     @{ Crate = "sentra-agent"; Pattern = 'path\s*=\s*"\.\./sentra-ui"'; Message = "sentra-agent must not depend on UI crates" }
 )
 

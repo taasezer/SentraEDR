@@ -89,22 +89,38 @@ Compatibility notes:
 
 ## Phase 2: ETW Telemetry Engine
 
-Status: Design in review
+Status: Complete pending user review
 
-Reason:
+Completed:
 
-- Phase 1 workspace and shared event schemas are complete.
-- Phase 2 design narrows ETW ingestion to process start and process exit events.
-- Implementation planning requires user review of the Phase 2 design spec.
+- Added `engine-etw` crate.
+- Added process start and process exit record models.
+- Added process lifecycle normalization into shared telemetry events.
+- Added deterministic synthetic ETW source.
+- Added bounded queue ingestion runner.
+- Added ingestion stats and component health reporting.
+- Added queue pressure handling with dropped-event accounting.
+- Added agent synthetic ETW dry run in observe-only mode.
+- Added architecture validation rules for `engine-etw`.
 
-Required output:
+Validation:
 
-- `engine-etw` crate.
-- Synthetic process event source for deterministic tests.
-- Process lifecycle normalizer.
-- Bounded queue ingestion runner.
-- Queue pressure and health metrics.
-- Phase 2 report and test results.
+- Normalizer tests cover process start and process exit events.
+- Ingestion tests cover bounded delivery and queue pressure.
+- Agent dry-run test covers two normalized synthetic events.
+- Final Phase 2 command results are recorded in `TEST_RESULTS/phase-2.md`.
+
+Architectural impact:
+
+- `engine-etw` depends only on shared crates.
+- Real Windows ETW session and callback code remains deferred.
+- No detection scoring or remediation is performed by telemetry ingestion.
+
+Performance notes:
+
+- Bounded queue pressure is observable through queue health.
+- Dropped telemetry is counted and degrades component health.
+- Real ETW burst and memory benchmarks are not claimed in this phase.
 
 ## Phase 3: Process Monitoring Engine
 

@@ -26,10 +26,7 @@ fn process_start_record_normalizes_to_telemetry_event() {
         process.image_path.unwrap().as_str(),
         r"C:\Windows\System32\cmd.exe"
     );
-    assert_eq!(
-        process.command_line.unwrap().as_str(),
-        "cmd.exe /c whoami"
-    );
+    assert_eq!(process.command_line.unwrap().as_str(), "cmd.exe /c whoami");
 }
 
 #[test]
