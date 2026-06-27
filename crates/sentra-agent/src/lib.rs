@@ -9,3 +9,4 @@ pub mod network_dry_run;
 pub mod persistence_dry_run;
 pub mod process_dry_run;
 pub mod remediation_dry_run;
+pub mod snapshot_builder;

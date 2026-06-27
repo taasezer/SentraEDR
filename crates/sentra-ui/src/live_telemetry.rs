@@ -1,4 +1,4 @@
-use shared_models::{EventPriority, HealthStatus, Timestamp};
+use shared_models::{DemoTelemetrySnapshot, EventPriority, HealthStatus, Timestamp};
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct LiveTelemetryCounters {
@@ -27,6 +27,41 @@ pub struct LiveTelemetrySnapshot {
     pub highest_priority: EventPriority,
     pub counters: LiveTelemetryCounters,
     pub ipc: IpcTelemetryHealth,
+}
+
+impl LiveTelemetrySnapshot {
+    /// Converts a [`DemoTelemetrySnapshot`] from shared-models into the
+    /// UI projection model.  The `highest_priority` is derived from
+    /// the detection alert count: Critical when alerts > 0, Low otherwise.
+    pub fn from_demo_snapshot(snapshot: &DemoTelemetrySnapshot) -> Self {
+        let highest_priority = if snapshot.detection_alerts > 0 {
+            EventPriority::High
+        } else {
+            EventPriority::Low
+        };
+
+        Self {
+            observed_at: snapshot.generated_at.clone(),
+            agent_status: snapshot.agent_status,
+            highest_priority,
+            counters: LiveTelemetryCounters {
+                received: snapshot.etw_received,
+                normalized: snapshot.etw_normalized,
+                dropped: snapshot.etw_dropped,
+                process_signals: snapshot.process_signals,
+                persistence_signals: snapshot.persistence_signals,
+                network_signals: snapshot.network_signals,
+                memory_signals: snapshot.memory_signals,
+                detection_alerts: snapshot.detection_alerts,
+            },
+            ipc: IpcTelemetryHealth {
+                enabled: snapshot.ipc_dispatcher_capacity > 0,
+                dispatcher_capacity: snapshot.ipc_dispatcher_capacity,
+                frames_accepted: snapshot.ipc_frames_accepted,
+                failed_frames: snapshot.ipc_frames_failed,
+            },
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -83,5 +118,82 @@ impl Default for LiveTelemetryPanel {
             ipc_failed_frames: 0,
             last_updated: Timestamp::now(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn sample_demo_snapshot() -> DemoTelemetrySnapshot {
+        let mut snapshot = DemoTelemetrySnapshot::empty(
+            Timestamp::parse_rfc3339("2026-06-28T10:00:00Z").unwrap(),
+            HealthStatus::Healthy,
+        );
+        snapshot.etw_received = 128;
+        snapshot.etw_normalized = 124;
+        snapshot.etw_dropped = 4;
+        snapshot.process_signals = 7;
+        snapshot.persistence_signals = 4;
+        snapshot.network_signals = 6;
+        snapshot.memory_signals = 3;
+        snapshot.detection_alerts = 2;
+        snapshot.detection_findings = 3;
+        snapshot.ipc_frames_accepted = 42;
+        snapshot.ipc_frames_failed = 1;
+        snapshot.ipc_dispatcher_capacity = 256;
+        snapshot
+    }
+
+    #[test]
+    fn from_demo_snapshot_maps_etw_counters() {
+        let demo = sample_demo_snapshot();
+        let live = LiveTelemetrySnapshot::from_demo_snapshot(&demo);
+        assert_eq!(live.counters.received, 128);
+        assert_eq!(live.counters.normalized, 124);
+        assert_eq!(live.counters.dropped, 4);
+    }
+
+    #[test]
+    fn from_demo_snapshot_maps_behavioral_signals() {
+        let demo = sample_demo_snapshot();
+        let live = LiveTelemetrySnapshot::from_demo_snapshot(&demo);
+        assert_eq!(live.counters.process_signals, 7);
+        assert_eq!(live.counters.persistence_signals, 4);
+        assert_eq!(live.counters.network_signals, 6);
+        assert_eq!(live.counters.memory_signals, 3);
+    }
+
+    #[test]
+    fn from_demo_snapshot_maps_ipc() {
+        let demo = sample_demo_snapshot();
+        let live = LiveTelemetrySnapshot::from_demo_snapshot(&demo);
+        assert!(live.ipc.enabled);
+        assert_eq!(live.ipc.dispatcher_capacity, 256);
+        assert_eq!(live.ipc.frames_accepted, 42);
+        assert_eq!(live.ipc.failed_frames, 1);
+    }
+
+    #[test]
+    fn from_demo_snapshot_derives_high_priority_when_alerts_exist() {
+        let demo = sample_demo_snapshot();
+        let live = LiveTelemetrySnapshot::from_demo_snapshot(&demo);
+        assert_eq!(live.highest_priority, EventPriority::High);
+    }
+
+    #[test]
+    fn from_demo_snapshot_derives_low_priority_when_no_alerts() {
+        let mut demo = sample_demo_snapshot();
+        demo.detection_alerts = 0;
+        let live = LiveTelemetrySnapshot::from_demo_snapshot(&demo);
+        assert_eq!(live.highest_priority, EventPriority::Low);
+    }
+
+    #[test]
+    fn from_demo_snapshot_panel_sums_behavioral_signals() {
+        let demo = sample_demo_snapshot();
+        let live = LiveTelemetrySnapshot::from_demo_snapshot(&demo);
+        let panel = LiveTelemetryPanel::from_snapshot(live);
+        assert_eq!(panel.behavioral_signals, 7 + 4 + 6 + 3);
     }
 }

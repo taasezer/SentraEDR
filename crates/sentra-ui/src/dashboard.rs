@@ -2,7 +2,7 @@ use crate::action_queue::ActionReviewCard;
 use crate::alert_card::AlertCard;
 use crate::live_telemetry::{LiveTelemetryPanel, LiveTelemetrySnapshot};
 use crate::timeline::{TimelineEntry, TimelineKind};
-use shared_models::{Alert, RiskLevel};
+use shared_models::{Alert, RiskLevel, Timestamp};
 use std::cmp::Reverse;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -17,8 +17,9 @@ pub struct RiskSummary {
     pub pending_actions: usize,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DashboardState {
+    pub generated_at: Timestamp,
     pub summary: RiskSummary,
     pub telemetry: LiveTelemetryPanel,
     pub alerts: Vec<AlertCard>,
@@ -27,12 +28,13 @@ pub struct DashboardState {
 }
 
 impl DashboardState {
-    pub fn from_alerts(alerts: Vec<Alert>) -> Self {
+    pub fn from_alerts(alerts: Vec<Alert>, generated_at: Timestamp) -> Self {
         let mut alert_cards: Vec<AlertCard> =
             alerts.into_iter().map(AlertCard::from_alert).collect();
         alert_cards.sort_by_key(|alert| Reverse(alert.score));
 
         let mut dashboard = Self {
+            generated_at,
             summary: summarize_alerts(&alert_cards),
             telemetry: LiveTelemetryPanel::default(),
             timeline: alert_cards.iter().map(alert_timeline_entry).collect(),

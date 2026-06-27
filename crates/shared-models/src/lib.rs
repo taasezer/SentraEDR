@@ -1,3 +1,4 @@
+pub mod demo_snapshot;
 pub mod detection;
 pub mod health;
 pub mod process;
@@ -5,6 +6,7 @@ pub mod remediation;
 pub mod telemetry;
 pub mod time;
 
+pub use demo_snapshot::DemoTelemetrySnapshot;
 pub use detection::{Alert, AlertId, Finding, FindingId, RiskLevel, Signal};
 pub use health::{ComponentHealth, HealthStatus, QueueHealth};
 pub use process::{CommandLine, ImagePath, ProcessIdentity};

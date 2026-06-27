@@ -9,10 +9,13 @@ use shared_models::{
 
 #[test]
 fn render_dashboard_html_includes_demo_sections_and_metrics() {
-    let mut dashboard = DashboardState::from_alerts(vec![
-        alert_at(RiskLevel::Critical, 95, "2026-06-28T10:01:00Z"),
-        alert_at(RiskLevel::High, 81, "2026-06-28T10:02:00Z"),
-    ]);
+    let mut dashboard = DashboardState::from_alerts(
+        vec![
+            alert_at(RiskLevel::Critical, 95, "2026-06-28T10:01:00Z"),
+            alert_at(RiskLevel::High, 81, "2026-06-28T10:02:00Z"),
+        ],
+        ts("2026-06-28T10:00:00Z"),
+    );
     dashboard.apply_live_telemetry(live_snapshot("2026-06-28T10:00:00Z"));
     dashboard.add_pending_action(ActionReviewCard::new(
         "approval-required remediation",
@@ -27,9 +30,9 @@ fn render_dashboard_html_includes_demo_sections_and_metrics() {
     let html = render_dashboard_html(&dashboard);
 
     assert!(html.contains("<!doctype html>"));
-    assert!(html.contains("SentraEDR Demo Dashboard"));
-    assert!(html.contains("Live Telemetry"));
-    assert!(html.contains("Normalized Events"));
+    assert!(html.contains("SentraEDR Dashboard"));
+    assert!(html.contains("Events Received"));
+    assert!(html.contains("Normalized"));
     assert!(html.contains(">10<"));
     assert!(html.contains("Behavioral Signals"));
     assert!(html.contains(">10<"));
@@ -40,11 +43,12 @@ fn render_dashboard_html_includes_demo_sections_and_metrics() {
     assert!(html.contains("Pending Actions"));
     assert!(html.contains("Event Timeline"));
     assert!(html.contains("Telemetry update: 10 normalized events"));
+    assert!(html.contains("Generated"));
 }
 
 #[test]
 fn render_dashboard_html_escapes_dynamic_text() {
-    let mut dashboard = DashboardState::from_alerts(Vec::new());
+    let mut dashboard = DashboardState::from_alerts(Vec::new(), ts("2026-06-28T10:00:00Z"));
     dashboard.add_pending_action(ActionReviewCard::new(
         "<script>alert(1)</script>",
         RemediationMode::ApprovalRequired,

@@ -9,11 +9,14 @@ use shared_models::{
 
 #[test]
 fn dashboard_summarizes_alert_risk_counts() {
-    let dashboard = DashboardState::from_alerts(vec![
-        alert(RiskLevel::Critical, 95, true),
-        alert(RiskLevel::High, 80, true),
-        alert(RiskLevel::Low, 25, false),
-    ]);
+    let dashboard = DashboardState::from_alerts(
+        vec![
+            alert(RiskLevel::Critical, 95, true),
+            alert(RiskLevel::High, 80, true),
+            alert(RiskLevel::Low, 25, false),
+        ],
+        Timestamp::now(),
+    );
 
     assert_eq!(dashboard.summary.total_alerts, 3);
     assert_eq!(dashboard.summary.critical, 1);
@@ -24,11 +27,14 @@ fn dashboard_summarizes_alert_risk_counts() {
 
 #[test]
 fn alert_cards_are_sorted_by_score_descending() {
-    let dashboard = DashboardState::from_alerts(vec![
-        alert(RiskLevel::Low, 25, false),
-        alert(RiskLevel::Critical, 95, true),
-        alert(RiskLevel::High, 80, true),
-    ]);
+    let dashboard = DashboardState::from_alerts(
+        vec![
+            alert(RiskLevel::Low, 25, false),
+            alert(RiskLevel::Critical, 95, true),
+            alert(RiskLevel::High, 80, true),
+        ],
+        Timestamp::now(),
+    );
 
     let scores: Vec<u8> = dashboard.alerts.iter().map(|alert| alert.score).collect();
     assert_eq!(scores, vec![95, 80, 25]);
@@ -36,10 +42,13 @@ fn alert_cards_are_sorted_by_score_descending() {
 
 #[test]
 fn timeline_contains_alert_entries_in_timestamp_order() {
-    let dashboard = DashboardState::from_alerts(vec![
-        alert_at(RiskLevel::High, 80, "2026-06-27T09:12:00Z"),
-        alert_at(RiskLevel::Critical, 95, "2026-06-27T09:10:00Z"),
-    ]);
+    let dashboard = DashboardState::from_alerts(
+        vec![
+            alert_at(RiskLevel::High, 80, "2026-06-27T09:12:00Z"),
+            alert_at(RiskLevel::Critical, 95, "2026-06-27T09:10:00Z"),
+        ],
+        Timestamp::now(),
+    );
 
     assert_eq!(dashboard.timeline.len(), 2);
     assert_eq!(dashboard.timeline[0].kind, TimelineKind::AlertObserved);
@@ -51,7 +60,8 @@ fn timeline_contains_alert_entries_in_timestamp_order() {
 
 #[test]
 fn pending_action_cards_are_added_to_dashboard() {
-    let mut dashboard = DashboardState::from_alerts(vec![alert(RiskLevel::High, 80, true)]);
+    let mut dashboard =
+        DashboardState::from_alerts(vec![alert(RiskLevel::High, 80, true)], Timestamp::now());
     dashboard.add_pending_action(ActionReviewCard::new(
         "approval-required remediation",
         RemediationMode::ApprovalRequired,
@@ -72,7 +82,8 @@ fn pending_action_cards_are_added_to_dashboard() {
 
 #[test]
 fn live_telemetry_updates_dashboard_panel_without_changing_alert_summary() {
-    let mut dashboard = DashboardState::from_alerts(vec![alert(RiskLevel::High, 80, true)]);
+    let mut dashboard =
+        DashboardState::from_alerts(vec![alert(RiskLevel::High, 80, true)], Timestamp::now());
 
     dashboard.apply_live_telemetry(live_snapshot("2026-06-28T10:00:00Z"));
 
@@ -86,8 +97,10 @@ fn live_telemetry_updates_dashboard_panel_without_changing_alert_summary() {
 
 #[test]
 fn live_telemetry_update_is_added_to_sorted_timeline() {
-    let mut dashboard =
-        DashboardState::from_alerts(vec![alert_at(RiskLevel::High, 80, "2026-06-28T10:01:00Z")]);
+    let mut dashboard = DashboardState::from_alerts(
+        vec![alert_at(RiskLevel::High, 80, "2026-06-28T10:01:00Z")],
+        Timestamp::now(),
+    );
 
     dashboard.apply_live_telemetry(live_snapshot("2026-06-28T10:00:00Z"));
 
