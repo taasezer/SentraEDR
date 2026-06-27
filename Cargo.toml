@@ -4,6 +4,7 @@ members = [
     "crates/shared-models",
     "crates/shared-ipc",
     "crates/engine-etw",
+    "crates/engine-process",
     "crates/sentra-agent",
 ]
 
