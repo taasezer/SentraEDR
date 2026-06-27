@@ -1,0 +1,14 @@
+[package]
+name = "sentra-process"
+version.workspace = true
+edition.workspace = true
+description = "Process monitoring and analysis for SentraEDR"
+
+[dependencies]
+sentra-core = { path = "../sentra-core" }
+tokio = { workspace = true }
+windows = { workspace = true }
+tracing = { workspace = true }
+parking_lot = { workspace = true }
+chrono = { workspace = true }
+sysinfo = { workspace = true }

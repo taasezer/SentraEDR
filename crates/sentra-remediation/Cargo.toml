@@ -1,0 +1,12 @@
+[package]
+name = "sentra-remediation"
+version.workspace = true
+edition.workspace = true
+description = "Threat response and remediation for SentraEDR"
+
+[dependencies]
+sentra-core = { path = "../sentra-core" }
+tokio = { workspace = true }
+windows = { workspace = true }
+tracing = { workspace = true }
+chrono = { workspace = true }

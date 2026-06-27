@@ -1,0 +1,20 @@
+[package]
+name = "sentra-service"
+version.workspace = true
+edition.workspace = true
+description = "Windows Service wrapper and Orchestrator for SentraEDR"
+
+[dependencies]
+sentra-core = { path = "../sentra-core" }
+sentra-ipc = { path = "../sentra-ipc" }
+sentra-telemetry = { path = "../sentra-telemetry" }
+sentra-detection = { path = "../sentra-detection" }
+sentra-process = { path = "../sentra-process" }
+sentra-network = { path = "../sentra-network" }
+sentra-persistence = { path = "../sentra-persistence" }
+sentra-remediation = { path = "../sentra-remediation" }
+tokio = { workspace = true }
+windows = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+windows-service = { workspace = true }

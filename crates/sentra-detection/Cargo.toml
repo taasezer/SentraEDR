@@ -1,0 +1,13 @@
+[package]
+name = "sentra-detection"
+version.workspace = true
+edition.workspace = true
+description = "Detection engine for SentraEDR"
+
+[dependencies]
+sentra-core = { path = "../sentra-core" }
+tokio = { workspace = true }
+tracing = { workspace = true }
+parking_lot = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }

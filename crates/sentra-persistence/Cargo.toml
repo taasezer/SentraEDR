@@ -1,0 +1,15 @@
+[package]
+name = "sentra-persistence"
+version.workspace = true
+edition.workspace = true
+description = "Persistence mechanism detection for SentraEDR"
+
+[dependencies]
+sentra-core = { path = "../sentra-core" }
+tokio = { workspace = true }
+windows = { workspace = true }
+windows-registry = { workspace = true }
+tracing = { workspace = true }
+parking_lot = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
