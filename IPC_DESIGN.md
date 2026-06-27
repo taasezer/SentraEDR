@@ -1,7 +1,7 @@
 # SentraEDR IPC Design
 
 Date: 2026-06-27
-Phase: 12
+Phase: 13
 
 ## IPC Choice
 
@@ -82,3 +82,15 @@ IPC is specified but not implemented. Phase 1 creates the initial crate boundary
 - Decode validation rejects unsupported major schema versions, mismatched message kind/payload pairs, incomplete frames, oversized frames, malformed JSON, and trailing bytes.
 
 Named-pipe transport, pipe ACLs, UI streaming, command authorization flow, and live remediation request handling remain deferred.
+
+## Phase 13 Status
+
+`shared-ipc` now provides the first in-memory message dispatch boundary:
+
+- `IpcDispatcher` validates envelopes before enqueueing.
+- `IpcDispatcherConfig` rejects zero-capacity queues.
+- Route-specific queues exist for health, telemetry summary, alert, user decision, remediation request, remediation status, and audit record messages.
+- Route statistics track accepted, rejected, and dropped messages.
+- Full route queues return the existing `QueueFull` error and preserve bounded backpressure behavior.
+
+Named-pipe transport, pipe ACLs, UI streaming, command authorization, and live remediation handling remain deferred.

@@ -435,3 +435,39 @@ Performance notes:
 
 - Frame payloads are capped at 1 MiB before deserialization.
 - Phase 12 introduces no unbounded channel, persistent store, background loop, or production telemetry load.
+
+## Phase 13: IPC Dispatcher
+
+Status: Complete pending user review
+
+Completed:
+
+- Added in-memory `IpcDispatcher` to `shared-ipc`.
+- Added dispatcher config with zero-capacity rejection.
+- Added bounded queues for health, telemetry summary, alert, user decision, remediation request, remediation status, and audit record routes.
+- Added route statistics for accepted, rejected, and dropped messages.
+- Added validation before enqueueing.
+- Added queue pressure handling through existing `QueueFull` behavior.
+- Added Phase 13 report and test results.
+
+Validation:
+
+- Dispatcher tests cover alert routing, remediation request routing, kind/payload mismatch rejection, queue pressure drop accounting, and zero capacity rejection.
+- Final Phase 13 command results are recorded in `TEST_RESULTS/phase-13.md`.
+
+Architectural impact:
+
+- `shared-ipc` now owns in-memory IPC routing boundaries.
+- Dispatch remains transport-agnostic and does not import agent, UI, or engine crates.
+- Message execution and command authorization remain outside the dispatcher.
+
+Security notes:
+
+- No named-pipe server/client, Windows ACL, UI streaming, remediation execution, malware execution, Atomic Red Team execution, VM orchestration, deployment, or signing was added.
+- UI-originated decision and remediation request messages are queued as data only.
+
+Performance notes:
+
+- All dispatcher routes use bounded queues.
+- Route pressure is observable through dropped counts.
+- Phase 13 introduces no persistent store, background loop, unbounded channel, or production telemetry load.

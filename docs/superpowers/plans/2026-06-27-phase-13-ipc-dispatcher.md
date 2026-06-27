@@ -17,7 +17,7 @@
 - Modify later: `crates/shared-ipc/src/lib.rs`
 - Create later: `crates/shared-ipc/src/dispatcher.rs`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Create tests for:
 
@@ -27,7 +27,7 @@ Create tests for:
 - full route queue returns `QueueFull` and records one dropped message;
 - zero capacity dispatcher config is rejected.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `cargo test -p shared-ipc --test dispatcher`
 
@@ -40,23 +40,23 @@ Expected: fail because `IpcDispatcher`, `IpcDispatcherConfig`, and `IpcRouteStat
 - Modify: `crates/shared-ipc/src/lib.rs`
 - Create: `crates/shared-ipc/src/dispatcher.rs`
 
-- [ ] **Step 1: Add dispatcher error**
+- [x] **Step 1: Add dispatcher error**
 
 Add `InvalidDispatcherCapacity { capacity: usize }`.
 
-- [ ] **Step 2: Implement config and stats**
+- [x] **Step 2: Implement config and stats**
 
 Add `IpcDispatcherConfig` with `queue_capacity` and `try_new`. Add `IpcRouteStats` with `accepted`, `rejected`, and `dropped`.
 
-- [ ] **Step 3: Implement dispatcher queues**
+- [x] **Step 3: Implement dispatcher queues**
 
 Add route-specific bounded senders and receivers for every `IpcMessageKind`.
 
-- [ ] **Step 4: Implement dispatch**
+- [x] **Step 4: Implement dispatch**
 
 Validate the envelope, route it by kind, update stats, and return `QueueFull` when a route queue is full.
 
-- [ ] **Step 5: Run GREEN**
+- [x] **Step 5: Run GREEN**
 
 Run: `cargo test -p shared-ipc --test dispatcher`
 
@@ -72,11 +72,11 @@ Expected: pass.
 - Create: `PHASE_REPORTS/phase-13.md`
 - Create: `TEST_RESULTS/phase-13.md`
 
-- [ ] **Step 1: Record Phase 13 docs**
+- [x] **Step 1: Record Phase 13 docs**
 
 Document that Phase 13 adds in-memory dispatch only.
 
-- [ ] **Step 2: Run final verification**
+- [x] **Step 2: Run final verification**
 
 Run:
 

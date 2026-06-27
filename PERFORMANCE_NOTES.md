@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 12
+Phase: 13
 
 ## Performance Goals
 
@@ -83,6 +83,10 @@ Phase 12:
 
 - IPC frames must enforce a maximum payload size before deserialization and must not allocate unbounded buffers.
 
+Phase 13:
+
+- IPC dispatch queues must remain bounded and report pressure through route stats.
+
 ## Phase 0 Status
 
 Performance is specified as design targets. Measurements begin when executable components exist.
@@ -130,3 +134,7 @@ CI quality gates validate the workspace with deterministic build, lint, test, ar
 ## Phase 12 Status
 
 IPC frame validation now rejects payloads larger than 1 MiB before deserialization and rejects incomplete frames before parsing. The implementation performs in-memory serialization only; it introduces no named-pipe loop, socket, background scheduler, persistent store, unbounded channel, production telemetry stream, or benchmark claim.
+
+## Phase 13 Status
+
+IPC dispatch now routes validated messages into bounded per-category queues and records accepted, rejected, and dropped counts. The implementation introduces no named-pipe loop, socket, background scheduler, persistent store, unbounded channel, production telemetry stream, or benchmark claim.
