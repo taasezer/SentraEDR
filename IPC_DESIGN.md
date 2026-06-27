@@ -1,7 +1,7 @@
 # SentraEDR IPC Design
 
 Date: 2026-06-27
-Phase: 15
+Phase: 16
 
 ## IPC Choice
 
@@ -101,7 +101,7 @@ Named-pipe transport, pipe ACLs, UI streaming, command authorization, and live r
 
 - `IpcFrameIntake` accepts one complete byte frame at a time.
 - `accept_frame` uses the existing frame decoder and then dispatches the validated envelope.
-- `IpcFrameIntakeStats` tracks accepted, decode-failed, and dispatch-failed frames.
+- `IpcFrameIntakeStats` tracks accepted frames, decode failures, and dispatch failures.
 - Decode failures never enter route queues.
 - Dispatch failures are counted after successful decode when validation or queue pressure rejects delivery.
 
@@ -116,5 +116,16 @@ Stream buffering, named-pipe transport, pipe ACLs, UI streaming, command authori
 - Multiple complete frames in one chunk are emitted in order.
 - Oversized length prefixes are rejected before waiting for payload bytes.
 - `IpcStreamAssemblerStats` tracks completed frames, buffered bytes, and rejected stream inputs.
+
+Named-pipe transport, pipe ACLs, async read loops, UI streaming, command authorization, and live remediation handling remain deferred.
+
+## Phase 16 Status
+
+`shared-ipc` now provides the IPC processing pipeline composition:
+
+- `IpcPipeline` integrates the stream assembler, frame intake, and dispatcher into a single unit.
+- The pipeline accepts raw byte chunks and manages the full flow from assembly to dispatch.
+- `IpcPipelineStats` provides an aggregated view of the pipeline's health, tracking chunks received, frames completed, frames accepted, and failures at the stream and intake levels.
+- The composition ensures a strictly linear, validated, and bounded data flow from transport-agnostic bytes to typed IPC envelopes.
 
 Named-pipe transport, pipe ACLs, async read loops, UI streaming, command authorization, and live remediation handling remain deferred.

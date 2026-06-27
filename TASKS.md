@@ -223,6 +223,11 @@ Architectural impact:
 - `engine-network` depends only on `shared-models`.
 - Final scoring, alerting, network isolation, remediation, and UI behavior remain deferred.
 
+Performance notes:
+
+- Matching uses conservative string checks.
+- No real telemetry throughput or memory-retention benchmark is claimed yet.
+
 ## Phase 6: Heuristic Detection Engine
 
 Status: Complete pending user review
@@ -540,3 +545,35 @@ Performance notes:
 
 - Incomplete buffering is bounded to one maximum-sized frame.
 - Oversized frame lengths are rejected before waiting for payload bytes.
+
+## Phase 16: IPC Pipeline Composition
+
+Status: Complete pending user review
+
+Completed:
+
+- Added `IpcPipeline` composition unit to `shared-ipc`.
+- Integrated `IpcStreamAssembler` and `IpcFrameIntake` into a linear processing flow.
+- Implemented `process_bytes` to translate raw byte chunks into dispatched messages.
+- Added `IpcPipelineStats` for aggregated pipeline monitoring (chunks, frames, decode/dispatch failures).
+- Added comprehensive TDD suite covering happy path, fragmentation, malformed frames, and buffer overflows.
+- Added Phase 16 report and test results.
+
+Validation:
+
+- Pipeline tests cover single/multiple frames across chunks, fragmented data, decode failures, and stream rejection.
+- Final Phase 16 command results are recorded in `TEST_RESULTS/phase-16.md`.
+
+Architectural impact:
+
+- `shared-ipc` now owns the complete, composed processing pipeline from raw bytes to route queues.
+- The composition remains transport-agnostic and does not introduce any side effects or engine imports.
+
+Security notes:
+
+- No named-pipe server/client, Windows ACL, async pipe read loop, UI streaming, remediation execution, malware execution, Atomic Red Team execution, VM orchestration, deployment, or signing was added.
+
+Performance notes:
+
+- Pipeline composition introduces negligible overhead over the individual components.
+- Integrated statistics allow for end-to-end monitoring of the IPC ingestion health.

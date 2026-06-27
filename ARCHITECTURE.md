@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 15
+Phase: 16
 
 ## Purpose
 
@@ -80,7 +80,7 @@ The flow is intentionally one-directional for security decisions. Detection may 
 `engine-memory`
 
 - Owns memory inspection, suspicious thread starts, and injection indicators.
-- Phase 8 implements observe-only memory telemetry metadata analysis for remote thread, executable private memory, unsigned module, section mapping, and memory protection indicators.
+- Phase 8 implements observe-only memory telemetry metadata analysis for remote thread, executable private memory, unsigned module, section mapping, and executable memory protection indicators.
 - Does not read process memory, dump memory, inject code, call Windows memory APIs, suspend processes, remediate, or create final alerts.
 
 `shared-models`
@@ -95,6 +95,7 @@ The flow is intentionally one-directional for security decisions. Detection may 
 - Phase 13 implements in-memory IPC dispatch into bounded per-category queues.
 - Phase 14 implements complete-frame intake that decodes and dispatches in memory.
 - Phase 15 implements bounded in-memory stream assembly from byte chunks to complete frames.
+- Phase 16 implements an IPC processing pipeline that composes the stream assembler, frame intake, and dispatcher, providing integrated statistics for the full flow.
 - Does not contain detection logic.
 
 `sentra-ui`
@@ -224,16 +225,20 @@ Workspace quality gates are now defined as non-destructive metadata in `testing-
 
 ## Phase 12 Status
 
-`shared-ipc` now defines typed IPC message envelopes, message kinds, payload variants, and a length-prefixed JSON frame codec. Frames validate schema major version, message kind/payload consistency, incomplete data, and maximum payload size before dispatch. This phase does not implement named-pipe server/client transport, Windows ACLs, UI streaming, remediation execution, malware testing, VM orchestration, deployment, or release signing.
+`shared-ipc` now defines typed IPC message envelopes, message kinds, payload variants, and a length-prefixed JSON frame codec. Frames validate schema major version, message kind/payload consistency, incomplete data, and maximum payload size before dispatch. This phase does not implement named-pipe server/client transport, Windows ACLS, UI streaming, remediation execution, malware testing, VM orchestration, deployment, or release signing.
 
 ## Phase 13 Status
 
-`shared-ipc` now provides an in-memory IPC dispatcher that validates envelopes and routes them into bounded per-category queues for health, telemetry summaries, alerts, user decisions, remediation requests, remediation status updates, and audit records. Queue pressure is surfaced through existing bounded queue errors and route statistics. This phase does not implement named-pipe server/client transport, Windows ACLs, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.
+`shared-ipc` now provides an in-memory IPC dispatcher that validates envelopes and routes them into bounded per-category queues for health, telemetry summaries, alerts, user decisions, remediation requests, remediation status updates, and audit records. Queue pressure is surfaced through existing bounded queue errors and route statistics. This phase does not implement named-pipe server/client transport, Windows ACLS, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.
 
 ## Phase 14 Status
 
-`shared-ipc` now provides an in-memory complete-frame intake adapter that decodes length-prefixed frames and dispatches validated envelopes through the bounded IPC dispatcher. Intake statistics track accepted frames, decode failures, and dispatch failures. This phase does not implement named-pipe server/client transport, Windows ACLs, stream buffering, async pipe read loops, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.
+`shared-ipc` now provides an in-memory complete-frame intake adapter that decodes length-prefixed frames and dispatches validated envelopes through the bounded IPC dispatcher. Intake statistics track accepted frames, decode failures, and dispatch failures. This phase does not implement named-pipe server/client transport, Windows ACLS, stream buffering, async pipe read loops, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.
 
 ## Phase 15 Status
 
-`shared-ipc` now provides a bounded in-memory stream assembler that accepts arbitrary byte chunks and emits complete length-prefixed frames. It buffers incomplete frames, extracts multiple complete frames from one chunk, rejects oversized length prefixes before payload buffering, and reports buffered byte counts. This phase does not implement named-pipe server/client transport, Windows ACLs, async pipe read loops, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.
+`shared-ipc` now provides a bounded in-memory stream assembler that accepts arbitrary byte chunks and emits complete length-prefixed frames. It buffers incomplete frames, extracts multiple complete frames from one chunk, rejects oversized length prefixes before payload buffering, and reports buffered byte counts. This phase does not implement named-pipe server/client transport, Windows ACLS, async pipe read loops, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.
+
+## Phase 16 Status
+
+`shared-ipc` now provides an IPC processing pipeline that composes the stream assembler, frame intake, and dispatcher. The pipeline accepts raw byte chunks and translates them into dispatched IPC messages, with integrated statistics for chunks received, frames completed, frames accepted, and failures at both assembly and intake stages. This phase remains strictly in-memory and does not implement named-pipe transport, Windows ACLS, async pipe read loops, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.

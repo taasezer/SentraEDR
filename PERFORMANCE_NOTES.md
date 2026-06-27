@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 15
+Phase: 16
 
 ## Performance Goals
 
@@ -95,6 +95,10 @@ Phase 15:
 
 - IPC stream assembly must bound incomplete frame buffering and reject oversized prefixes early.
 
+Phase 16:
+
+- IPC pipeline composition must provide a low-overhead path from raw bytes to dispatched messages without adding unbounded buffering or excessive allocations per chunk.
+
 ## Phase 0 Status
 
 Performance is specified as design targets. Measurements begin when executable components exist.
@@ -147,10 +151,14 @@ IPC frame validation now rejects payloads larger than 1 MiB before deserializati
 
 IPC dispatch now routes validated messages into bounded per-category queues and records accepted, rejected, and dropped counts. The implementation introduces no named-pipe loop, socket, background scheduler, persistent store, unbounded channel, production telemetry stream, or benchmark claim.
 
-## Phase 14 Status
+## Phase 14 Status la
 
 IPC frame intake now composes frame decode and bounded dispatch while tracking accepted, decode-failed, and dispatch-failed frame counts. The implementation accepts complete frames only and introduces no stream buffer, named-pipe loop, socket, background scheduler, persistent store, unbounded channel, production telemetry stream, or benchmark claim.
 
 ## Phase 15 Status
 
 IPC stream assembly now buffers incomplete frame bytes up to one maximum-sized frame and emits complete frames for downstream intake. Oversized prefixes are rejected before payload buffering. The implementation introduces no named-pipe loop, socket, background scheduler, persistent store, unbounded channel, production telemetry stream, or benchmark claim.
+
+## Phase 16 Status
+
+IPC pipeline composition now integrates the stream assembler, frame intake, and dispatcher into a single processing unit. The implementation validates that raw byte chunks are efficiently translated into dispatched IPC messages with minimal overhead and correct failure accounting. This phase remains strictly in-memory and introduces no named-pipe transport, async read loops, or unbounded buffering.
