@@ -1,17 +1,15 @@
 pub mod action_queue;
 pub mod alert_card;
 pub mod dashboard;
-pub mod demo_html;
 pub mod live_telemetry;
-pub mod server;
 pub mod timeline;
+pub mod tui;
 
 pub use action_queue::ActionReviewCard;
 pub use alert_card::AlertCard;
 pub use dashboard::{DashboardState, RiskSummary};
-pub use demo_html::render_dashboard_html;
 pub use live_telemetry::{
     IpcTelemetryHealth, LiveTelemetryCounters, LiveTelemetryPanel, LiveTelemetrySnapshot,
 };
-pub use server::{SharedDashboardState, dashboard_router};
 pub use timeline::{TimelineEntry, TimelineKind};
+pub use tui::{SharedDashboardState, run_tui_loop};

@@ -2,7 +2,7 @@ use engine_etw::{EtwEventSource, LiveEtwSource};
 use sentra_agent::config::AgentConfig;
 use sentra_agent::logging::init_logging;
 use sentra_agent::snapshot_builder::build_demo_snapshot;
-use sentra_ui::{DashboardState, LiveTelemetrySnapshot, dashboard_router};
+use sentra_ui::{DashboardState, LiveTelemetrySnapshot, run_tui_loop};
 use shared_models::Timestamp;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -86,19 +86,8 @@ async fn main() {
         }
     });
 
-    // 3. Start Web Server
-    let app = dashboard_router(shared_state);
-    let port = 3000;
-
-    // Convert the router to a MakeService
-    let listener = tokio::net::TcpListener::bind(format!("127.0.0.1:{}", port))
-        .await
-        .expect("Failed to bind TCP listener");
-
-    info!(
-        "Live Telemetry Dashboard available at http://127.0.0.1:{}",
-        port
-    );
-
-    axum::serve(listener, app).await.expect("Server failed");
+    // 3. Start Native TUI
+    if let Err(e) = run_tui_loop(shared_state).await {
+        error!("Terminal UI error: {:?}", e);
+    }
 }
