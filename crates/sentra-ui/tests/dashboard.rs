@@ -60,7 +60,10 @@ fn pending_action_cards_are_added_to_dashboard() {
 
     assert_eq!(dashboard.pending_actions.len(), 1);
     assert_eq!(dashboard.summary.pending_actions, 1);
-    assert_eq!(dashboard.timeline.last().unwrap().kind, TimelineKind::ActionQueued);
+    assert_eq!(
+        dashboard.timeline.last().unwrap().kind,
+        TimelineKind::ActionQueued
+    );
 }
 
 fn alert(risk_level: RiskLevel, score: u8, remediation_eligible: bool) -> Alert {
