@@ -1,6 +1,7 @@
 use sentra_agent::config::AgentConfig;
 use sentra_agent::dry_run::run_synthetic_etw_dry_run;
 use sentra_agent::logging::init_logging;
+use sentra_agent::network_dry_run::run_synthetic_network_analysis_dry_run;
 use sentra_agent::persistence_dry_run::run_synthetic_persistence_analysis_dry_run;
 use sentra_agent::process_dry_run::run_synthetic_process_analysis_dry_run;
 use tracing::info;
@@ -17,6 +18,7 @@ fn main() {
     let etw_report = run_synthetic_etw_dry_run();
     let process_report = run_synthetic_process_analysis_dry_run();
     let persistence_report = run_synthetic_persistence_analysis_dry_run();
+    let network_report = run_synthetic_network_analysis_dry_run();
 
     info!(
         mode = ?config.mode,
@@ -32,6 +34,9 @@ fn main() {
         persistence_observed = persistence_report.stats.observed,
         persistence_handled = persistence_report.stats.handled,
         persistence_signals = persistence_report.signals.len(),
+        network_observed = network_report.stats.observed,
+        network_handled = network_report.stats.handled,
+        network_signals = network_report.signals.len(),
         "SentraEDR agent foundation initialized in observe-only mode"
     );
 }

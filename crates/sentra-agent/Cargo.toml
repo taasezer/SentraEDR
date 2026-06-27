@@ -9,6 +9,7 @@ version.workspace = true
 
 [dependencies]
 engine-etw = { path = "../engine-etw" }
+engine-network = { path = "../engine-network" }
 engine-persistence = { path = "../engine-persistence" }
 engine-process = { path = "../engine-process" }
 serde.workspace = true

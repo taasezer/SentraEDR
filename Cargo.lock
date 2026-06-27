@@ -82,6 +82,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "engine-network"
+version = "0.1.0"
+dependencies = [
+ "shared-models",
+]
+
+[[package]]
 name = "engine-persistence"
 version = "0.1.0"
 dependencies = [
@@ -349,6 +356,7 @@ name = "sentra-agent"
 version = "0.1.0"
 dependencies = [
  "engine-etw",
+ "engine-network",
  "engine-persistence",
  "engine-process",
  "serde",

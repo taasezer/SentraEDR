@@ -6,6 +6,7 @@ members = [
     "crates/engine-etw",
     "crates/engine-process",
     "crates/engine-persistence",
+    "crates/engine-network",
     "crates/sentra-agent",
 ]
 
