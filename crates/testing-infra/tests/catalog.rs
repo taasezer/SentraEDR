@@ -1,6 +1,4 @@
-use testing_infra::{
-    CoverageMatrix, SafetyLevel, ScenarioCatalog, ScenarioKind, TestScenario,
-};
+use testing_infra::{CoverageMatrix, SafetyLevel, ScenarioCatalog, ScenarioKind, TestScenario};
 
 #[test]
 fn default_catalog_contains_only_synthetic_safe_scenarios() {

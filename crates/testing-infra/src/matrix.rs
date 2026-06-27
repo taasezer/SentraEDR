@@ -77,11 +77,7 @@ impl CoverageMatrix {
                 .iter()
                 .filter(|phase| phase.scenario_count > 0)
                 .count(),
-            total_scenarios: self
-                .phases
-                .iter()
-                .map(|phase| phase.scenario_count)
-                .sum(),
+            total_scenarios: self.phases.iter().map(|phase| phase.scenario_count).sum(),
             unique_mitre_tags: unique_tags.len(),
         }
     }
