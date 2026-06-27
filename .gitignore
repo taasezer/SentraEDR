@@ -22,8 +22,16 @@ ui/.nuxt/
 ui/.output/
 ui/build/
 
+# Next.js / Node (any nesting)
+node_modules/
+.next/
+out/
+
 # IDEs
 .idea/
 .vscode/
 *.swp
 *.swo
+
+# Local tooling
+.claude/
