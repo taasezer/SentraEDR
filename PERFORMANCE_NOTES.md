@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 10
+Phase: 11
 
 ## Performance Goals
 
@@ -75,6 +75,10 @@ Phase 9:
 
 - UI update throttling and non-blocking agent behavior checks.
 
+Phase 11:
+
+- Quality gates must remain bounded to compile, lint, test, architecture validation, and observe-only dry-run checks.
+
 ## Phase 0 Status
 
 Performance is specified as design targets. Measurements begin when executable components exist.
@@ -114,3 +118,7 @@ Synthetic dashboard state construction validates small in-memory alert sorting, 
 ## Phase 10 Status
 
 Synthetic testing infrastructure validates scenario catalog construction, safety gating, phase coverage counting, and MITRE tag aggregation. The implementation introduces no VM orchestration, command runner, malware execution, live IPC fuzzing, persistent store, unbounded channel, or host mutation.
+
+## Phase 11 Status
+
+CI quality gates validate the workspace with deterministic build, lint, test, architecture, and observe-only dry-run commands. The implementation introduces a local command runner and GitHub Actions workflow, but no production telemetry load, benchmark claim, VM orchestration, deployment job, release signing, malware execution, remediation execution, persistent store, unbounded channel, or host mutation.

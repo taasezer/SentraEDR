@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 10
+Phase: 11
 
 ## Purpose
 
@@ -104,6 +104,7 @@ The flow is intentionally one-directional for security decisions. Detection may 
 
 - Owns safe test scenario cataloging, phase coverage matrices, and validation planning.
 - Phase 10 implements synthetic-only scenario descriptors and coverage reporting for phases 2 through 9.
+- Phase 11 adds quality gate metadata for workspace validation commands.
 - Does not execute malware, Atomic Red Team commands, VM orchestration, remediation, IPC fuzzing, host mutation, or engine internals.
 
 ## Dependency Rules
@@ -212,3 +213,7 @@ Workspace foundations are implemented. `shared-models`, `shared-ipc`, and `sentr
 ## Phase 10 Status
 
 `testing-infra` now defines a synthetic-only scenario catalog and phase coverage matrix for implemented phases. Unsafe scenarios are rejected before entering the catalog. This phase does not run malware, Atomic Red Team, VM orchestration, host mutation, live IPC fuzzing, remediation, or engine internals.
+
+## Phase 11 Status
+
+Workspace quality gates are now defined as non-destructive metadata in `testing-infra`, exposed through a local PowerShell runner, and mirrored by a GitHub Actions workflow for the `Omer` branch and pull requests. The gates cover formatting, clippy, workspace tests, architecture validation, and the observe-only agent dry run. Phase 11 does not add deployment, signing, malware execution, VM orchestration, remediation execution, host mutation, or release automation.

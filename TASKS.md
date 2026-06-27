@@ -363,3 +363,38 @@ Architectural impact:
 - `testing-infra` has no dependency on agent, UI, IPC, or engine crates.
 - Phase 10 is planning and validation metadata only.
 - Live malware, Atomic Red Team execution, VM orchestration, IPC fuzzing, remediation execution, and host mutation remain deferred.
+
+## Phase 11: CI And Quality Gates
+
+Status: Complete pending user review
+
+Completed:
+
+- Added non-destructive quality gate metadata to `testing-infra`.
+- Added safety validation that rejects destructive quality gate commands.
+- Added a local PowerShell quality gate runner.
+- Added a GitHub Actions workflow for pushes to `Omer` and pull requests.
+- Mirrored the same gate order across metadata, local runner, and CI.
+- Added Phase 11 report and test results.
+
+Validation:
+
+- Quality gate metadata tests cover ordering, command coverage, non-destructive defaults, and destructive command rejection.
+- The local runner covers format, clippy, workspace tests, architecture validation, and observe-only agent dry run.
+- Final Phase 11 command results are recorded in `TEST_RESULTS/phase-11.md`.
+
+Architectural impact:
+
+- `testing-infra` remains isolated from agent, UI, IPC, and engine crates.
+- Quality gates orchestrate existing validation commands without owning detection or remediation behavior.
+- GitHub Actions targets the `Omer` branch; `main` is untouched.
+
+Security notes:
+
+- No malware execution, Atomic Red Team execution, VM orchestration, deployment, release signing, remediation execution, or host mutation was added.
+- The agent run remains observe-only.
+
+Performance notes:
+
+- Phase 11 adds validation orchestration only.
+- No production telemetry load, benchmark claim, persistent store, unbounded channel, or background scheduler was introduced.

@@ -17,7 +17,7 @@
 - Modify later: `crates/testing-infra/src/lib.rs`
 - Create later: `crates/testing-infra/src/quality_gate.rs`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 ```rust
 use testing_infra::{QualityGateCommand, QualityGateSet};
@@ -72,7 +72,7 @@ fn destructive_quality_gate_is_rejected() {
 }
 ```
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `cargo test -p testing-infra --test quality_gate`
 
@@ -84,15 +84,15 @@ Expected: FAIL because `QualityGateSet` and `QualityGateCommand` are missing.
 - Modify: `crates/testing-infra/src/lib.rs`
 - Create: `crates/testing-infra/src/quality_gate.rs`
 
-- [ ] **Step 1: Implement `QualityGateCommand`**
+- [x] **Step 1: Implement `QualityGateCommand`**
 
 Fields: name, program, args, destructive.
 
-- [ ] **Step 2: Implement `QualityGateSet`**
+- [x] **Step 2: Implement `QualityGateSet`**
 
 Methods: `try_new`, `default_workspace`, `validate_safe`.
 
-- [ ] **Step 3: Run GREEN**
+- [x] **Step 3: Run GREEN**
 
 Run: `cargo test -p testing-infra --test quality_gate`
 
@@ -104,15 +104,15 @@ Expected: PASS with 4 tests.
 - Create: `tools/run-quality-gates.ps1`
 - Create: `.github/workflows/ci.yml`
 
-- [ ] **Step 1: Add PowerShell runner**
+- [x] **Step 1: Add PowerShell runner**
 
 The script sets `$ErrorActionPreference = "Stop"` and runs the required commands in order.
 
-- [ ] **Step 2: Add GitHub Actions workflow**
+- [x] **Step 2: Add GitHub Actions workflow**
 
 Workflow runs on `push` to `Omer` and `pull_request`, uses Windows latest, installs stable Rust, then runs the same command sequence.
 
-- [ ] **Step 3: Smoke-test local runner**
+- [x] **Step 3: Smoke-test local runner**
 
 Run: `powershell -ExecutionPolicy Bypass -File tools\run-quality-gates.ps1`
 
@@ -127,11 +127,11 @@ Expected: all gates exit 0.
 - Create: `PHASE_REPORTS/phase-11.md`
 - Create: `TEST_RESULTS/phase-11.md`
 
-- [ ] **Step 1: Update phase documentation**
+- [x] **Step 1: Update phase documentation**
 
 Record Phase 11 as local/CI quality gates only.
 
-- [ ] **Step 2: Run final verification**
+- [x] **Step 2: Run final verification**
 
 Run:
 
@@ -145,4 +145,3 @@ powershell -ExecutionPolicy Bypass -File tools\run-quality-gates.ps1
 ```
 
 Expected: all commands exit 0.
-
