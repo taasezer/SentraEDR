@@ -8,6 +8,7 @@ members = [
     "crates/engine-persistence",
     "crates/engine-network",
     "crates/engine-detection",
+    "crates/engine-remediation",
     "crates/sentra-agent",
 ]
 
