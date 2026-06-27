@@ -1,6 +1,8 @@
 pub mod config;
 pub mod detection_dry_run;
 pub mod dry_run;
+pub mod ipc;
+pub mod ipc_dry_run;
 pub mod logging;
 pub mod memory_dry_run;
 pub mod network_dry_run;

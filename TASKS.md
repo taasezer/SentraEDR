@@ -577,3 +577,41 @@ Performance notes:
 
 - Pipeline composition introduces negligible overhead over the individual components.
 - Integrated statistics allow for end-to-end monitoring of the IPC ingestion health.
+
+## Phase 17: Agent IPC Service Skeleton
+
+Status: Complete pending user review
+
+Completed:
+
+- Added `IpcConfig` to `sentra-agent` configuration.
+- Added IPC dispatcher capacity validation and default IPC settings.
+- Preserved TOML compatibility when the `ipc` section is omitted.
+- Added `IpcService` in `sentra-agent` as an in-memory wrapper around `shared-ipc` `IpcPipeline`.
+- Added transport-free raw byte processing through `process_raw_bytes`.
+- Exposed IPC pipeline stats and dispatcher accessors for controlled dry-run validation.
+- Added synthetic IPC dry run that encodes a health message, feeds it in chunks, and verifies dispatch.
+- Added IPC dry-run metrics to the observe-only agent startup log.
+
+Validation:
+
+- Config tests cover default IPC settings, TOML loading, omitted IPC defaults, and zero-capacity rejection.
+- IPC service tests cover fragmented frame routing, disabled-service behavior, and invalid dispatcher capacity.
+- IPC dry-run test covers end-to-end in-memory routing from encoded bytes to the health queue.
+- Final Phase 17 command results are recorded in `TEST_RESULTS/phase-17.md`.
+
+Architectural impact:
+
+- `sentra-agent` now has an IPC lifecycle skeleton without opening a named pipe or socket.
+- `shared-ipc` remains transport-agnostic and isolated from agent internals.
+- The UI can later consume the same message categories through a live transport layer without owning detection logic.
+
+Security notes:
+
+- Phase 17 remains observe-only and in-memory.
+- No named-pipe server/client, Windows ACL, UI command authorization, remediation execution, malware execution, VM orchestration, deployment, or signing was added.
+
+Performance notes:
+
+- IPC route queues remain bounded through `shared-ipc`.
+- The agent logs aggregate IPC dry-run counters instead of streaming raw high-volume telemetry.

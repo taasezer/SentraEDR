@@ -1,7 +1,7 @@
 # SentraEDR IPC Design
 
 Date: 2026-06-27
-Phase: 16
+Phase: 17
 
 ## IPC Choice
 
@@ -129,3 +129,15 @@ Named-pipe transport, pipe ACLs, async read loops, UI streaming, command authori
 - The composition ensures a strictly linear, validated, and bounded data flow from transport-agnostic bytes to typed IPC envelopes.
 
 Named-pipe transport, pipe ACLs, async read loops, UI streaming, command authorization, and live remediation handling remain deferred.
+
+## Phase 17 Status
+
+`sentra-agent` now hosts the first IPC service lifecycle skeleton:
+
+- `IpcConfig` enables or disables IPC processing and bounds dispatcher capacity.
+- `IpcService` wraps `IpcPipeline` and accepts raw byte chunks through `process_raw_bytes`.
+- The service exposes pipeline stats for chunks, completed frames, accepted frames, stream rejections, decode failures, and dispatch failures.
+- A synthetic agent dry run encodes a health envelope, feeds it as fragmented bytes, and verifies delivery into the health route.
+- Agent startup logs IPC dry-run counters in observe-only mode.
+
+This phase remains in-memory only. Named-pipe transport, pipe ACLs, async read loops, UI streaming, command authorization, and live remediation handling remain deferred.

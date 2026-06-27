@@ -1,6 +1,7 @@
 use sentra_agent::config::AgentConfig;
 use sentra_agent::detection_dry_run::run_synthetic_detection_dry_run;
 use sentra_agent::dry_run::run_synthetic_etw_dry_run;
+use sentra_agent::ipc_dry_run::run_synthetic_ipc_dry_run;
 use sentra_agent::logging::init_logging;
 use sentra_agent::memory_dry_run::run_synthetic_memory_analysis_dry_run;
 use sentra_agent::network_dry_run::run_synthetic_network_analysis_dry_run;
@@ -25,11 +26,17 @@ fn main() {
     let memory_report = run_synthetic_memory_analysis_dry_run();
     let detection_report = run_synthetic_detection_dry_run();
     let remediation_report = run_synthetic_remediation_dry_run();
+    let ipc_report = run_synthetic_ipc_dry_run().unwrap_or_else(|error| {
+        eprintln!("SentraEDR agent IPC dry-run error: {error}");
+        std::process::exit(2);
+    });
 
     info!(
         mode = ?config.mode,
         telemetry_capacity = config.queue.telemetry_capacity,
         detection_capacity = config.queue.detection_capacity,
+        ipc_enabled = config.ipc.enabled,
+        ipc_dispatcher_capacity = config.ipc.dispatcher_capacity,
         etw_received = etw_report.stats.received,
         etw_normalized = etw_report.stats.normalized,
         etw_dropped = etw_report.stats.dropped,
@@ -53,6 +60,13 @@ fn main() {
         remediation_rejected = remediation_report.rejected_by_policy,
         remediation_waiting_for_approval = remediation_report.waiting_for_approval,
         remediation_planned_steps = remediation_report.planned_steps,
+        ipc_chunks = ipc_report.stats.chunks_received,
+        ipc_frames_completed = ipc_report.stats.frames_completed,
+        ipc_frames_accepted = ipc_report.stats.frames_accepted,
+        ipc_stream_rejected = ipc_report.stats.stream_rejected,
+        ipc_decode_failed = ipc_report.stats.intake_decode_failed,
+        ipc_dispatch_failed = ipc_report.stats.intake_dispatch_failed,
+        ipc_health_messages = ipc_report.delivered_health_messages,
         "SentraEDR agent foundation initialized in observe-only mode"
     );
 }

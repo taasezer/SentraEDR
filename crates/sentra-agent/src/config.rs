@@ -7,6 +7,8 @@ use thiserror::Error;
 pub struct AgentConfig {
     pub mode: AgentMode,
     pub queue: QueueConfig,
+    #[serde(default)]
+    pub ipc: IpcConfig,
     pub logging: LoggingConfig,
 }
 
@@ -38,6 +40,13 @@ impl AgentConfig {
             });
         }
 
+        if self.ipc.dispatcher_capacity == 0 {
+            return Err(ConfigError::InvalidValue {
+                field: "ipc.dispatcher_capacity",
+                reason: "capacity must be greater than zero",
+            });
+        }
+
         Ok(())
     }
 }
@@ -47,6 +56,7 @@ impl Default for AgentConfig {
         Self {
             mode: AgentMode::ObserveOnly,
             queue: QueueConfig::default(),
+            ipc: IpcConfig::default(),
             logging: LoggingConfig::default(),
         }
     }
@@ -70,6 +80,21 @@ impl Default for QueueConfig {
         Self {
             telemetry_capacity: 4096,
             detection_capacity: 1024,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct IpcConfig {
+    pub enabled: bool,
+    pub dispatcher_capacity: usize,
+}
+
+impl Default for IpcConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            dispatcher_capacity: 256,
         }
     }
 }

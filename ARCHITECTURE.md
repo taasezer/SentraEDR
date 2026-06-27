@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 16
+Phase: 17
 
 ## Purpose
 
@@ -31,6 +31,7 @@ The flow is intentionally one-directional for security decisions. Detection may 
 - Starts runtimes and engines.
 - Loads configuration.
 - Hosts local IPC server.
+- Phase 17 implements an in-memory IPC service skeleton that wraps the `shared-ipc` pipeline and exposes dry-run stats without opening live transport.
 - Does not contain detection rules directly.
 
 `engine-etw`
@@ -242,3 +243,7 @@ Workspace quality gates are now defined as non-destructive metadata in `testing-
 ## Phase 16 Status
 
 `shared-ipc` now provides an IPC processing pipeline that composes the stream assembler, frame intake, and dispatcher. The pipeline accepts raw byte chunks and translates them into dispatched IPC messages, with integrated statistics for chunks received, frames completed, frames accepted, and failures at both assembly and intake stages. This phase remains strictly in-memory and does not implement named-pipe transport, Windows ACLS, async pipe read loops, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.
+
+## Phase 17 Status
+
+`sentra-agent` now owns a transport-free IPC service skeleton. `IpcConfig` controls whether the service processes input and bounds dispatcher capacity. `IpcService` wraps the `shared-ipc` pipeline, accepts raw byte chunks, exposes aggregate pipeline stats, and allows controlled dispatcher inspection for dry-run validation. The observe-only agent startup path now runs a synthetic IPC dry run and logs IPC counters alongside telemetry, analysis, detection, and remediation dry-run metrics. Live named-pipe transport, Windows ACLs, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, and release signing remain deferred.
