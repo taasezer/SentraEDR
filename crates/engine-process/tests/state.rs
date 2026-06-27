@@ -50,14 +50,8 @@ fn process_start_inserts_running_snapshot() {
     assert_eq!(snapshot.process.process_id, 4242);
     assert_eq!(snapshot.process.parent_process_id, Some(1000));
     assert_eq!(snapshot.status, ProcessLifecycleStatus::Running);
-    assert_eq!(
-        snapshot.first_observed,
-        timestamp("2026-06-27T09:00:00Z")
-    );
-    assert_eq!(
-        snapshot.last_observed,
-        timestamp("2026-06-27T09:00:00Z")
-    );
+    assert_eq!(snapshot.first_observed, timestamp("2026-06-27T09:00:00Z"));
+    assert_eq!(snapshot.last_observed, timestamp("2026-06-27T09:00:00Z"));
     assert_eq!(table.len(), 1);
 }
 
@@ -87,14 +81,8 @@ fn process_exit_marks_existing_process_as_exited() {
     assert!(matches!(update, ProcessStateUpdate::Exited(_)));
     let snapshot = table.get(4242).unwrap();
     assert_eq!(snapshot.status, ProcessLifecycleStatus::Exited);
-    assert_eq!(
-        snapshot.first_observed,
-        timestamp("2026-06-27T09:00:00Z")
-    );
-    assert_eq!(
-        snapshot.last_observed,
-        timestamp("2026-06-27T09:01:00Z")
-    );
+    assert_eq!(snapshot.first_observed, timestamp("2026-06-27T09:00:00Z"));
+    assert_eq!(snapshot.last_observed, timestamp("2026-06-27T09:01:00Z"));
     assert_eq!(table.len(), 1);
 }
 

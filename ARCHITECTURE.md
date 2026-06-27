@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 2
+Phase: 3
 
 ## Purpose
 
@@ -43,6 +43,9 @@ The flow is intentionally one-directional for security decisions. Detection may 
 `engine-process`
 
 - Owns process lineage, executable path analysis, signer metadata, command-line risk signals, and suspicious PowerShell behavior.
+- Phase 3 implements observe-only lifecycle state and preliminary process behavior signals from normalized telemetry.
+- Does not consume ETW-specific record types; it receives `NormalizedTelemetryEvent` through shared schemas.
+- Does not create final alerts or remediation eligibility.
 - Does not inspect packets, edit registry, or remediate.
 
 `engine-network`
@@ -159,3 +162,7 @@ Workspace foundations are implemented. `shared-models`, `shared-ipc`, and `sentr
 ## Phase 2 Status
 
 `engine-etw` now provides observe-only process telemetry ingestion for deterministic tests. The agent runs a synthetic dry run that records two process lifecycle events and logs normalized counts. The implementation intentionally excludes real ETW provider registration, Windows service installation, detection scoring, remediation, and UI streaming.
+
+## Phase 3 Status
+
+`engine-process` now tracks process start and exit telemetry in an in-memory state table and emits preliminary observe-only process signals. Initial signals cover suspicious parent-child process chains, PowerShell encoded command flags, and execution from user-writable paths. Full risk scoring, alert generation, signer reputation, Windows process enumeration, remediation, and UI streaming remain deferred.

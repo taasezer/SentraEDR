@@ -124,11 +124,38 @@ Performance notes:
 
 ## Phase 3: Process Monitoring Engine
 
-Status: Deferred
+Status: Complete pending user review
 
-Reason:
+Completed:
 
-- Requires process telemetry from Phase 2.
+- Added `engine-process` crate.
+- Added process lifecycle state table.
+- Added start and exit event handling from normalized telemetry.
+- Added observe-only preliminary process signals.
+- Added suspicious parent-child process chain matching.
+- Added PowerShell encoded command flag matching.
+- Added user-writable execution path matching.
+- Added agent synthetic process analysis dry run.
+- Added architecture validation rules for `engine-process`.
+
+Validation:
+
+- State tests cover process start, process exit, and irrelevant telemetry.
+- Signal tests cover suspicious parent-child, encoded PowerShell, user-writable execution paths, and ignored non-process events.
+- Agent dry-run test covers synthetic process analysis and signal counts.
+- Final Phase 3 command results are recorded in `TEST_RESULTS/phase-3.md`.
+
+Architectural impact:
+
+- `engine-process` consumes shared telemetry schemas instead of ETW-specific records.
+- `engine-process` depends only on `shared-models`.
+- Final scoring, alerting, remediation, and UI behavior remain deferred.
+
+Performance notes:
+
+- State is in-memory and deterministic for Phase 3 test data.
+- Matching uses conservative string checks.
+- No real telemetry throughput or memory-retention benchmark is claimed yet.
 
 ## Phase 4: Persistence Engine
 
