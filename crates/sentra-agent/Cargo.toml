@@ -13,6 +13,7 @@ engine-etw = { path = "../engine-etw" }
 engine-network = { path = "../engine-network" }
 engine-persistence = { path = "../engine-persistence" }
 engine-process = { path = "../engine-process" }
+engine-remediation = { path = "../engine-remediation" }
 serde.workspace = true
 shared-ipc = { path = "../shared-ipc" }
 shared-models = { path = "../shared-models" }

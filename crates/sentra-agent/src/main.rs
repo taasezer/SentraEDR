@@ -5,6 +5,7 @@ use sentra_agent::logging::init_logging;
 use sentra_agent::network_dry_run::run_synthetic_network_analysis_dry_run;
 use sentra_agent::persistence_dry_run::run_synthetic_persistence_analysis_dry_run;
 use sentra_agent::process_dry_run::run_synthetic_process_analysis_dry_run;
+use sentra_agent::remediation_dry_run::run_synthetic_remediation_dry_run;
 use tracing::info;
 
 fn main() {
@@ -21,6 +22,7 @@ fn main() {
     let persistence_report = run_synthetic_persistence_analysis_dry_run();
     let network_report = run_synthetic_network_analysis_dry_run();
     let detection_report = run_synthetic_detection_dry_run();
+    let remediation_report = run_synthetic_remediation_dry_run();
 
     info!(
         mode = ?config.mode,
@@ -42,6 +44,10 @@ fn main() {
         detection_signals = detection_report.stats.signals_observed,
         detection_findings = detection_report.findings.len(),
         detection_alerts = detection_report.alerts.len(),
+        remediation_decisions = remediation_report.decisions_evaluated,
+        remediation_rejected = remediation_report.rejected_by_policy,
+        remediation_waiting_for_approval = remediation_report.waiting_for_approval,
+        remediation_planned_steps = remediation_report.planned_steps,
         "SentraEDR agent foundation initialized in observe-only mode"
     );
 }
