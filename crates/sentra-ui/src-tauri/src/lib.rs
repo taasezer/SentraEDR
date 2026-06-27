@@ -27,26 +27,30 @@ pub fn run() {
             std::thread::spawn(move || {
                 let rt = Runtime::new().unwrap();
                 rt.block_on(async {
-                    // Try to connect to the SentraEDR IPC Pipe
-                    let mut client = match IpcClient::connect().await {
-                        Ok(c) => c,
-                        Err(e) => {
-                            eprintln!("Failed to connect to IPC server: {}", e);
-                            return;
-                        }
-                    };
-
-                    println!("Successfully connected to SentraEDR IPC pipe");
-
                     loop {
-                        match client.receive_message().await {
-                            Ok(msg) => {
-                                // Emit to frontend
-                                let _ = app_handle.emit("ipc-message", msg);
+                        // Try to connect to the SentraEDR IPC Pipe
+                        let mut client = match IpcClient::connect().await {
+                            Ok(c) => {
+                                println!("Successfully connected to SentraEDR IPC pipe");
+                                c
+                            },
+                            Err(_) => {
+                                // Silently wait and retry if the backend service is not running yet
+                                tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                                continue;
                             }
-                            Err(e) => {
-                                eprintln!("IPC connection lost: {}", e);
-                                break;
+                        };
+
+                        loop {
+                            match client.receive_message().await {
+                                Ok(msg) => {
+                                    // Emit to frontend
+                                    let _ = app_handle.emit("ipc-message", msg);
+                                }
+                                Err(e) => {
+                                    eprintln!("IPC connection lost: {}. Reconnecting...", e);
+                                    break; // Break inner loop to trigger reconnect
+                                }
                             }
                         }
                     }
