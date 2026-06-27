@@ -2,6 +2,7 @@ use crate::action_queue::ActionReviewCard;
 use crate::alert_card::AlertCard;
 use crate::timeline::{TimelineEntry, TimelineKind};
 use shared_models::{Alert, RiskLevel};
+use std::cmp::Reverse;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct RiskSummary {
@@ -27,7 +28,7 @@ impl DashboardState {
     pub fn from_alerts(alerts: Vec<Alert>) -> Self {
         let mut alert_cards: Vec<AlertCard> =
             alerts.into_iter().map(AlertCard::from_alert).collect();
-        alert_cards.sort_by(|left, right| right.score.cmp(&left.score));
+        alert_cards.sort_by_key(|alert| Reverse(alert.score));
 
         let mut dashboard = Self {
             summary: summarize_alerts(&alert_cards),
