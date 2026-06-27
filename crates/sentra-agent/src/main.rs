@@ -2,6 +2,7 @@ use sentra_agent::config::AgentConfig;
 use sentra_agent::detection_dry_run::run_synthetic_detection_dry_run;
 use sentra_agent::dry_run::run_synthetic_etw_dry_run;
 use sentra_agent::logging::init_logging;
+use sentra_agent::memory_dry_run::run_synthetic_memory_analysis_dry_run;
 use sentra_agent::network_dry_run::run_synthetic_network_analysis_dry_run;
 use sentra_agent::persistence_dry_run::run_synthetic_persistence_analysis_dry_run;
 use sentra_agent::process_dry_run::run_synthetic_process_analysis_dry_run;
@@ -21,6 +22,7 @@ fn main() {
     let process_report = run_synthetic_process_analysis_dry_run();
     let persistence_report = run_synthetic_persistence_analysis_dry_run();
     let network_report = run_synthetic_network_analysis_dry_run();
+    let memory_report = run_synthetic_memory_analysis_dry_run();
     let detection_report = run_synthetic_detection_dry_run();
     let remediation_report = run_synthetic_remediation_dry_run();
 
@@ -41,6 +43,9 @@ fn main() {
         network_observed = network_report.stats.observed,
         network_handled = network_report.stats.handled,
         network_signals = network_report.signals.len(),
+        memory_observed = memory_report.stats.observed,
+        memory_handled = memory_report.stats.handled,
+        memory_signals = memory_report.signals.len(),
         detection_signals = detection_report.stats.signals_observed,
         detection_findings = detection_report.findings.len(),
         detection_alerts = detection_report.alerts.len(),
