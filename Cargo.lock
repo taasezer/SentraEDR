@@ -159,6 +159,7 @@ name = "engine-memory"
 version = "0.1.0"
 dependencies = [
  "shared-models",
+ "windows",
 ]
 
 [[package]]
@@ -611,6 +612,7 @@ name = "sentra-ui"
 version = "0.1.0"
 dependencies = [
  "crossterm",
+ "engine-memory",
  "engine-remediation",
  "ratatui",
  "serde",
