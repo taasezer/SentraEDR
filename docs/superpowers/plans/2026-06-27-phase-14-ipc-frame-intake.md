@@ -17,7 +17,7 @@
 - Modify later: `crates/shared-ipc/src/lib.rs`
 - Create later: `crates/shared-ipc/src/intake.rs`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Create tests for:
 
@@ -26,7 +26,7 @@ Create tests for:
 - full route queues increment dispatch failure count;
 - remediation request frames are queued as data.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `cargo test -p shared-ipc --test intake`
 
@@ -38,19 +38,19 @@ Expected: fail because `IpcFrameIntake` and `IpcFrameIntakeStats` are missing.
 - Modify: `crates/shared-ipc/src/lib.rs`
 - Create: `crates/shared-ipc/src/intake.rs`
 
-- [ ] **Step 1: Add intake stats**
+- [x] **Step 1: Add intake stats**
 
 Add `IpcFrameIntakeStats` with `accepted`, `decode_failed`, and `dispatch_failed`.
 
-- [ ] **Step 2: Add intake wrapper**
+- [x] **Step 2: Add intake wrapper**
 
 Add `IpcFrameIntake` with `new`, `accept_frame`, `stats`, `dispatcher`, and `dispatcher_mut`.
 
-- [ ] **Step 3: Compose decode and dispatch**
+- [x] **Step 3: Compose decode and dispatch**
 
 `accept_frame` must call `decode_frame`, count decode failures, call dispatcher, count dispatch failures, and count accepted frames only after dispatch succeeds.
 
-- [ ] **Step 4: Run GREEN**
+- [x] **Step 4: Run GREEN**
 
 Run: `cargo test -p shared-ipc --test intake`
 
@@ -66,11 +66,11 @@ Expected: pass.
 - Create: `PHASE_REPORTS/phase-14.md`
 - Create: `TEST_RESULTS/phase-14.md`
 
-- [ ] **Step 1: Record Phase 14 docs**
+- [x] **Step 1: Record Phase 14 docs**
 
 Document that Phase 14 adds in-memory complete-frame intake only.
 
-- [ ] **Step 2: Run final verification**
+- [x] **Step 2: Run final verification**
 
 Run:
 

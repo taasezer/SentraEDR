@@ -1,7 +1,7 @@
 # SentraEDR Architecture
 
 Date: 2026-06-27
-Phase: 13
+Phase: 14
 
 ## Purpose
 
@@ -93,6 +93,7 @@ The flow is intentionally one-directional for security decisions. Detection may 
 - Owns named-pipe framing, transport, serialization, bounded queues, backpressure, and schema negotiation.
 - Phase 12 implements in-memory IPC message envelopes and length-prefixed frame encoding/decoding.
 - Phase 13 implements in-memory IPC dispatch into bounded per-category queues.
+- Phase 14 implements complete-frame intake that decodes and dispatches in memory.
 - Does not contain detection logic.
 
 `sentra-ui`
@@ -227,3 +228,7 @@ Workspace quality gates are now defined as non-destructive metadata in `testing-
 ## Phase 13 Status
 
 `shared-ipc` now provides an in-memory IPC dispatcher that validates envelopes and routes them into bounded per-category queues for health, telemetry summaries, alerts, user decisions, remediation requests, remediation status updates, and audit records. Queue pressure is surfaced through existing bounded queue errors and route statistics. This phase does not implement named-pipe server/client transport, Windows ACLs, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.
+
+## Phase 14 Status
+
+`shared-ipc` now provides an in-memory complete-frame intake adapter that decodes length-prefixed frames and dispatches validated envelopes through the bounded IPC dispatcher. Intake statistics track accepted frames, decode failures, and dispatch failures. This phase does not implement named-pipe server/client transport, Windows ACLs, stream buffering, async pipe read loops, UI streaming, command authorization, remediation execution, malware testing, VM orchestration, deployment, or release signing.

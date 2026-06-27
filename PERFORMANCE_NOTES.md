@@ -1,7 +1,7 @@
 # SentraEDR Performance Notes
 
 Date: 2026-06-27
-Phase: 13
+Phase: 14
 
 ## Performance Goals
 
@@ -87,6 +87,10 @@ Phase 13:
 
 - IPC dispatch queues must remain bounded and report pressure through route stats.
 
+Phase 14:
+
+- IPC intake must count decode and dispatch failures without unbounded buffering.
+
 ## Phase 0 Status
 
 Performance is specified as design targets. Measurements begin when executable components exist.
@@ -138,3 +142,7 @@ IPC frame validation now rejects payloads larger than 1 MiB before deserializati
 ## Phase 13 Status
 
 IPC dispatch now routes validated messages into bounded per-category queues and records accepted, rejected, and dropped counts. The implementation introduces no named-pipe loop, socket, background scheduler, persistent store, unbounded channel, production telemetry stream, or benchmark claim.
+
+## Phase 14 Status
+
+IPC frame intake now composes frame decode and bounded dispatch while tracking accepted, decode-failed, and dispatch-failed frame counts. The implementation accepts complete frames only and introduces no stream buffer, named-pipe loop, socket, background scheduler, persistent store, unbounded channel, production telemetry stream, or benchmark claim.

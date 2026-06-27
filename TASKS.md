@@ -471,3 +471,37 @@ Performance notes:
 - All dispatcher routes use bounded queues.
 - Route pressure is observable through dropped counts.
 - Phase 13 introduces no persistent store, background loop, unbounded channel, or production telemetry load.
+
+## Phase 14: IPC Frame Intake
+
+Status: Complete pending user review
+
+Completed:
+
+- Added in-memory `IpcFrameIntake` to `shared-ipc`.
+- Added intake statistics for accepted, decode-failed, and dispatch-failed frames.
+- Added complete-frame decode and dispatch composition.
+- Added decode failure accounting before dispatch.
+- Added dispatch failure accounting for queue pressure and validation failures.
+- Added Phase 14 report and test results.
+
+Validation:
+
+- Intake tests cover alert frame routing, malformed frame decode failure accounting, full queue dispatch failure accounting, and remediation request frame queueing as data.
+- Final Phase 14 command results are recorded in `TEST_RESULTS/phase-14.md`.
+
+Architectural impact:
+
+- `shared-ipc` now owns an in-memory bridge from complete byte frames to bounded route queues.
+- Intake remains transport-agnostic and does not import agent, UI, or engine crates.
+- Stream buffering, named-pipe loops, UI command authorization, and payload execution remain outside this phase.
+
+Security notes:
+
+- No named-pipe server/client, Windows ACL, async pipe read loop, UI streaming, remediation execution, malware execution, Atomic Red Team execution, VM orchestration, deployment, or signing was added.
+- Remediation request frames are decoded and queued as data only.
+
+Performance notes:
+
+- Intake accepts complete frames only and does not allocate an unbounded stream buffer.
+- Decode and dispatch failures are counted separately for future health reporting.

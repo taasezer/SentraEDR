@@ -1,7 +1,7 @@
 # SentraEDR IPC Design
 
 Date: 2026-06-27
-Phase: 13
+Phase: 14
 
 ## IPC Choice
 
@@ -94,3 +94,15 @@ Named-pipe transport, pipe ACLs, UI streaming, command authorization flow, and l
 - Full route queues return the existing `QueueFull` error and preserve bounded backpressure behavior.
 
 Named-pipe transport, pipe ACLs, UI streaming, command authorization, and live remediation handling remain deferred.
+
+## Phase 14 Status
+
+`shared-ipc` now provides a complete-frame intake boundary:
+
+- `IpcFrameIntake` accepts one complete byte frame at a time.
+- `accept_frame` uses the existing frame decoder and then dispatches the validated envelope.
+- `IpcFrameIntakeStats` tracks accepted, decode-failed, and dispatch-failed frames.
+- Decode failures never enter route queues.
+- Dispatch failures are counted after successful decode when validation or queue pressure rejects delivery.
+
+Stream buffering, named-pipe transport, pipe ACLs, UI streaming, command authorization, and live remediation handling remain deferred.
