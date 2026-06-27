@@ -1,0 +1,25 @@
+{
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "",
+    "devPath": "../dist",
+    "distDir": "../dist"
+  },
+  "tauri": {
+    "security": {
+      "csp": "default-src 'self'",
+      "pattern": "isolation"
+    },
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "execute": false,
+        "open": false
+      },
+      "fs": {
+        "all": false
+      }
+    }
+  }
+}

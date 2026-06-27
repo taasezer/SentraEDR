@@ -1,0 +1,10 @@
+[package]
+name = "ui-api-client"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+ui-models = { path = "../ui-models" }
+core-eventbus = { path = "../../core/core-eventbus" }
+tokio.workspace = true
