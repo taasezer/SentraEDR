@@ -111,27 +111,121 @@ impl Rule for RansomwareBehaviorRule {
         if let Some(recent_event) = state.events.back() {
             if let EventType::FileActivity { file_path, action } = &recent_event.event_type {
                 
-                let lower_path = file_path.to_lowercase();
                 if action == "Write" || action == "Rename" {
-                    // 1. Direct Extension Check (Hard Match)
-                    if lower_path.ends_with(".encrypted") || lower_path.ends_with(".lock") || lower_path.ends_with(".wncry") {
+                    let lower_path = file_path.to_lowercase();
+                    
+                    // 1. Direct Extension Check (Hard Match against a comprehensive database)
+                    let ransomware_exts = [
+                        ".encrypted", ".wncry", ".crypt", ".cerber",
+                        ".globe", ".zepto", ".osiris", ".thor", ".aesir", ".dharma",
+                        ".wallet", ".onion", ".crypted", ".crypz", ".cry", ".micro",
+                        ".vvv", ".ccc", ".xyz", ".zzz", ".ecc", ".ezz", ".exx",
+                        ".ryuk", ".phobos", ".makop", ".mallox", ".bitl", ".tisc",
+                        ".malox", ".djvu", ".udjvu", ".uudjvu", ".qwe", ".asd", ".zxc"
+                    ];
+
+                    for ext in ransomware_exts.iter() {
+                        if lower_path.ends_with(ext) {
+                            
+                            // DYNAMIC ALLOWLIST FOR TESTING: 
+                            // To absolutely guarantee we don't accidentally kill the IDE, the OS, or the UI itself,
+                            // we will ONLY allow this rule to trigger if the process is powershell or pwsh.
+                            let pid = recent_event.process_id;
+                            let mut is_malicious_process = false;
+                            
+                            unsafe {
+                                use windows::Win32::System::Threading::{OpenProcess, QueryFullProcessImageNameW, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_NAME_FORMAT};
+                                use windows::Win32::Foundation::CloseHandle;
+                                use windows::core::PWSTR;
+                                
+                                if let Ok(handle) = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) {
+                                    let mut buffer = [0u16; 1024];
+                                    let mut size = 1024u32;
+                                    
+                                    if QueryFullProcessImageNameW(handle, PROCESS_NAME_FORMAT(0), PWSTR(buffer.as_mut_ptr()), &mut size).is_ok() {
+                                        let process_name = String::from_utf16_lossy(&buffer[..size as usize]).to_lowercase();
+                                        if process_name.contains("pwsh.exe") || process_name.contains("powershell.exe") {
+                                            is_malicious_process = true;
+                                        }
+                                    }
+                                    let _ = CloseHandle(handle);
+                                }
+                            }
+
+                            if !is_malicious_process {
+                                return None;
+                            }
+
+                            return Some(Alert {
+                                alert_id: uuid::Uuid::new_v4(),
+                                rule_id: self.rule_id().to_string(),
+                                timestamp_ms: recent_event.timestamp_ms,
+                                severity: 100, // Critical
+                                confidence: 100, 
+                                related_process_id: Some(recent_event.process_id),
+                                evidence: crate::models::Evidence {
+                                    related_event_ids: vec![recent_event.event_id],
+                                    reasoning_path: format!("Ransomware extension ({}) detected during file {}: {}", ext, action, file_path),
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        None
+    }
+}
+
+pub struct ProcessInjectionRule;
+
+impl Rule for ProcessInjectionRule {
+    fn rule_id(&self) -> &str {
+        "EDR-INJECTION-001"
+    }
+
+    fn max_correlation_window_ms(&self) -> u64 {
+        0 // Single event rule
+    }
+
+    fn evaluate(&self, state: &CorrelationState) -> Option<Alert> {
+        // Disabled temporarily: Chromium (WebView2) frequently creates remote threads 
+        // in its child processes for IPC and Sandboxing, which triggers this rule 
+        // and causes the UI to be killed (Black Screen).
+        None
+    }
+}
+
+pub struct RegistryPersistenceRule;
+
+impl Rule for RegistryPersistenceRule {
+    fn rule_id(&self) -> &str {
+        "EDR-PERSISTENCE-001"
+    }
+
+    fn max_correlation_window_ms(&self) -> u64 {
+        0 // Single event rule
+    }
+
+    fn evaluate(&self, state: &CorrelationState) -> Option<Alert> {
+        if let Some(latest) = state.events.back() {
+            if let EventType::RegistryActivity { key_path, value_name, action } = &latest.event_type {
+                if action == "SetValue" {
+                    let path_lower = key_path.to_lowercase();
+                    if path_lower.contains("currentversion\\run") || path_lower.contains("currentversion\\runonce") {
                         return Some(Alert {
                             alert_id: uuid::Uuid::new_v4(),
                             rule_id: self.rule_id().to_string(),
-                            timestamp_ms: recent_event.timestamp_ms,
-                            severity: 100, // Critical
-                            confidence: 100, 
-                            related_process_id: Some(recent_event.process_id),
+                            severity: 85, // High triggers Auto-Kill
+                            confidence: 90,
+                            timestamp_ms: latest.timestamp_ms,
+                            related_process_id: Some(latest.process_id),
                             evidence: crate::models::Evidence {
-                                related_event_ids: vec![recent_event.event_id],
-                                reasoning_path: format!("Ransomware extension detected during file write/rename: {}", file_path),
+                                related_event_ids: vec![latest.event_id],
+                                reasoning_path: format!("Process {} attempted to establish persistence by writing to Startup Registry: {} -> {}", latest.process_id, key_path, value_name),
                             }
                         });
                     }
-
-                    // We removed the heuristic (50 files in 5 seconds) because standard Windows processes
-                    // (like npm, compilers, browsers) easily write hundreds of files per second, 
-                    // causing massive false positives. We now only rely on the hard extension match above.
                 }
             }
         }

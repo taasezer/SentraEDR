@@ -26,6 +26,10 @@ const KERNEL_FILE_GUID: GUID = GUID::from_values(
     0xedd08927, 0x9cc4, 0x4e65, [0xb9, 0x70, 0xc2, 0x56, 0x0f, 0xb5, 0xc2, 0x89]
 );
 
+const KERNEL_REGISTRY_GUID: GUID = GUID::from_values(
+    0x70eb4f03, 0xc1de, 0x4f73, [0xa0, 0x51, 0x33, 0xd1, 0x3d, 0x54, 0x13, 0xbd]
+);
+
 pub struct EtwSession {
     pub receiver: Receiver<NormalizedTelemetryEvent>,
 }
@@ -123,6 +127,17 @@ impl EtwSession {
                 EnableTraceEx2(
                     trace_handle,
                     &KERNEL_FILE_GUID,
+                    EVENT_CONTROL_CODE_ENABLE_PROVIDER.0 as u32,
+                    TRACE_LEVEL_INFORMATION as u8,
+                    0, 0, 0, None
+                )
+            };
+
+            // Enable Microsoft-Windows-Kernel-Registry
+            let _ = unsafe {
+                EnableTraceEx2(
+                    trace_handle,
+                    &KERNEL_REGISTRY_GUID,
                     EVENT_CONTROL_CODE_ENABLE_PROVIDER.0 as u32,
                     TRACE_LEVEL_INFORMATION as u8,
                     0, 0, 0, None

@@ -29,6 +29,9 @@ pub enum EventType {
     ProcessExit {
         exit_code: u32,
     },
+    RemoteThreadCreate {
+        target_process_id: u32,
+    },
     ImageLoad {
         image_path: String,
         is_signed: bool,
