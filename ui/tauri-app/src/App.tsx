@@ -18,11 +18,13 @@ function App() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [engineStatus, setEngineStatus] = useState<'Connecting' | 'Active' | 'Error'>('Connecting');
   const [errorMessage, setErrorMessage] = useState('');
+  const [monitoredEvents, setMonitoredEvents] = useState<number>(0);
 
   useEffect(() => {
     let unlistenAlerts: () => void;
     let unlistenStart: () => void;
     let unlistenError: () => void;
+    let unlistenStats: () => void;
 
     const setupListeners = async () => {
       const { listen } = await import('@tauri-apps/api/event');
@@ -49,6 +51,11 @@ function App() {
       });
       unlistenError = unlistErr;
 
+      const unlistStats = await listen<number>('telemetry-stats', (event) => {
+        setMonitoredEvents(event.payload);
+      });
+      unlistenStats = unlistStats;
+
       // Start the engine after listeners are attached
       await invoke('start_engine');
     };
@@ -59,6 +66,7 @@ function App() {
       if (unlistenAlerts) unlistenAlerts();
       if (unlistenStart) unlistenStart();
       if (unlistenError) unlistenError();
+      if (unlistenStats) unlistenStats();
     };
   }, []);
 
@@ -77,6 +85,12 @@ function App() {
 
       <main className="main-content">
         <aside className="stats-sidebar">
+          <div className="stat-card">
+            <div className="stat-title">Events Analyzed</div>
+            <div className="stat-value" style={{ color: 'var(--accent-color)', fontFamily: 'ui-monospace, monospace' }}>
+              {monitoredEvents.toLocaleString()}
+            </div>
+          </div>
           <div className="stat-card">
             <div className="stat-title">Total Alerts</div>
             <div className="stat-value">{alerts.length}</div>
