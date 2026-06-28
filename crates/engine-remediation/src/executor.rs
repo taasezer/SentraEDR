@@ -7,6 +7,8 @@ pub enum ExecutorError {
     ProcessNotFound,
     AccessDenied,
     NativeError(u32),
+    IoError(String),
+    MissingImagePath,
 }
 
 impl fmt::Display for ExecutorError {
@@ -15,6 +17,8 @@ impl fmt::Display for ExecutorError {
             Self::ProcessNotFound => write!(f, "Process not found"),
             Self::AccessDenied => write!(f, "Access denied"),
             Self::NativeError(code) => write!(f, "Native Windows error code: {}", code),
+            Self::IoError(msg) => write!(f, "IO error: {}", msg),
+            Self::MissingImagePath => write!(f, "Missing image path for quarantine"),
         }
     }
 }
@@ -35,8 +39,15 @@ impl RemediationExecutor {
                     Self::kill_process(pid)?;
                 }
                 RemediationPlanStepKind::SuspendProcess => {
-                    // MVP: map suspend to kill for now, or just implement suspend if needed
+                    // MVP: map suspend to kill for now
                     Self::kill_process(pid)?;
+                }
+                RemediationPlanStepKind::QuarantineFile => {
+                    if let Some(path) = &process.image_path {
+                        Self::quarantine_file(path.as_str())?;
+                    } else {
+                        return Err(ExecutorError::MissingImagePath);
+                    }
                 }
                 _ => {
                     // Ignore other unimplemented actions for MVP
@@ -66,6 +77,20 @@ impl RemediationExecutor {
                     return Err(ExecutorError::NativeError(e.code().0 as u32));
                 }
             }
+        }
+        
+        Ok(())
+    }
+
+    fn quarantine_file(path: &str) -> Result<(), ExecutorError> {
+        let original_path = std::path::Path::new(path);
+        if !original_path.exists() {
+            return Err(ExecutorError::IoError("File does not exist".into()));
+        }
+        
+        let quarantine_path = format!("{}.quarantined", path);
+        if let Err(e) = std::fs::rename(original_path, &quarantine_path) {
+            return Err(ExecutorError::IoError(e.to_string()));
         }
         
         Ok(())

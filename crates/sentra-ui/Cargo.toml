@@ -16,3 +16,4 @@ tokio.workspace = true
 shared-models = { path = "../shared-models" }
 engine-remediation = { version = "0.1.0", path = "../engine-remediation" }
 engine-memory = { version = "0.1.0", path = "../engine-memory" }
+engine-persistence = { version = "0.1.0", path = "../engine-persistence" }

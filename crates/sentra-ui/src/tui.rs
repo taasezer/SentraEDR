@@ -256,6 +256,29 @@ pub async fn run_tui_loop(state: SharedDashboardState) -> io::Result<()> {
                                 }
                             }
                         }
+                        KeyCode::Char('p') => {
+                            // Demo: Scan persistence (Registry Run keys)
+                            use engine_persistence::scanner::PersistenceScanner;
+                            use crate::{TimelineEntry, TimelineKind};
+                            use shared_models::Timestamp;
+
+                            if let Ok(entries) = PersistenceScanner::scan_run_keys() {
+                                let mut dash = state.write().await;
+                                if entries.is_empty() {
+                                    dash.timeline.push(TimelineEntry {
+                                        kind: TimelineKind::TelemetryUpdated,
+                                        title: "PERSISTENCE SCAN: No suspicious auto-run entries found.".to_string(),
+                                        timestamp: Timestamp::now(),
+                                    });
+                                } else {
+                                    dash.timeline.push(TimelineEntry {
+                                        kind: TimelineKind::AlertObserved,
+                                        title: format!("PERSISTENCE SCAN: Found {} suspicious Registry Run keys!", entries.len()),
+                                        timestamp: Timestamp::now(),
+                                    });
+                                }
+                            }
+                        }
                         _ => {}
                     }
                 }

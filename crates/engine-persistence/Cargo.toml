@@ -9,3 +9,4 @@ version.workspace = true
 
 [dependencies]
 shared-models = { path = "../shared-models" }
+winreg = "0.56.0"
