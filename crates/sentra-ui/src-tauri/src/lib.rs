@@ -1,6 +1,8 @@
 use sentra_core::SystemHealth;
 use sentra_ipc::IpcClient;
 use tauri::{Manager, Emitter};
+use tauri_plugin_shell::ShellExt;
+use tauri_plugin_shell::process::CommandEvent;
 use tokio::runtime::Runtime;
 
 #[tauri::command]
@@ -20,10 +22,26 @@ fn get_health_status() -> SystemHealth {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             let app_handle = app.handle().clone();
             
-            // Spawn a background thread for the IPC Client
+            // 1. Spawn the background backend service (Sidecar)
+            let sidecar_command = app.shell().sidecar("sentra-service").unwrap();
+            let (mut rx, _child) = sidecar_command.spawn().expect("Failed to spawn sentra-service sidecar");
+
+            // Optional: log sidecar output for debugging
+            tauri::async_runtime::spawn(async move {
+                while let Some(event) = rx.recv().await {
+                    if let CommandEvent::Stdout(line) = event {
+                        println!("Backend: {}", String::from_utf8_lossy(&line));
+                    } else if let CommandEvent::Stderr(line) = event {
+                        eprintln!("Backend Error: {}", String::from_utf8_lossy(&line));
+                    }
+                }
+            });
+
+            // 2. Spawn a background thread for the IPC Client
             std::thread::spawn(move || {
                 let rt = Runtime::new().unwrap();
                 rt.block_on(async {

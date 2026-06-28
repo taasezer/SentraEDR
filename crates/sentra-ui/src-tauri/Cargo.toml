@@ -25,3 +25,4 @@ serde_json = "1"
 sentra-core = { path = "../../sentra-core" }
 sentra-ipc = { path = "../../sentra-ipc" }
 tokio = { version = "1.0", features = ["full"] }
+tauri-plugin-shell = "2.3.5"
