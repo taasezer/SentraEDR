@@ -93,6 +93,18 @@ impl DetectionPipeline {
 
                 if should_alert {
                     self.alert_throttle.insert(throttle_key, current_time);
+
+                    // Trigger Active Response (Auto-Kill) if the severity is High
+                    if alert.severity >= 80 {
+                        if let Some(pid) = alert.related_process_id {
+                            println!("[RESPONSE] Attempting to auto-kill malicious PID: {}", pid);
+                            match crate::response::kill_process(pid) {
+                                Ok(_) => println!("[RESPONSE] SUCCESS: Malicious process {} destroyed.", pid),
+                                Err(e) => println!("[RESPONSE] FAILED: Could not kill process {}: {}", pid, e),
+                            }
+                        }
+                    }
+
                     // 4, 5, 6. Formatting the immutable alert based on the rule evaluation.
                     alerts.push(alert);
                 }

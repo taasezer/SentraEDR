@@ -138,3 +138,73 @@ impl Rule for RansomwareBehaviorRule {
         None
     }
 }
+
+pub struct ProcessInjectionRule;
+
+impl Rule for ProcessInjectionRule {
+    fn rule_id(&self) -> &str {
+        "EDR-INJECTION-001"
+    }
+
+    fn max_correlation_window_ms(&self) -> u64 {
+        0 // Single event rule
+    }
+
+    fn evaluate(&self, state: &CorrelationState) -> Option<Alert> {
+        if let Some(latest) = state.events.back() {
+            if let EventType::RemoteThreadCreate { target_process_id } = &latest.event_type {
+                let attacker_pid = latest.process_id;
+                return Some(Alert {
+                    alert_id: uuid::Uuid::new_v4(),
+                    rule_id: self.rule_id().to_string(),
+                    severity: 90, // High triggers Auto-Kill
+                    confidence: 90,
+                    timestamp_ms: latest.timestamp_ms,
+                    related_process_id: Some(attacker_pid),
+                    evidence: crate::models::Evidence {
+                        related_event_ids: vec![latest.event_id],
+                        reasoning_path: format!("Process {} injected a remote thread into Target Process {}. Possible RAT/Backdoor.", attacker_pid, target_process_id),
+                    }
+                });
+            }
+        }
+        None
+    }
+}
+
+pub struct RegistryPersistenceRule;
+
+impl Rule for RegistryPersistenceRule {
+    fn rule_id(&self) -> &str {
+        "EDR-PERSISTENCE-001"
+    }
+
+    fn max_correlation_window_ms(&self) -> u64 {
+        0 // Single event rule
+    }
+
+    fn evaluate(&self, state: &CorrelationState) -> Option<Alert> {
+        if let Some(latest) = state.events.back() {
+            if let EventType::RegistryActivity { key_path, value_name, action } = &latest.event_type {
+                if action == "SetValue" {
+                    let path_lower = key_path.to_lowercase();
+                    if path_lower.contains("currentversion\\run") || path_lower.contains("currentversion\\runonce") {
+                        return Some(Alert {
+                            alert_id: uuid::Uuid::new_v4(),
+                            rule_id: self.rule_id().to_string(),
+                            severity: 85, // High triggers Auto-Kill
+                            confidence: 90,
+                            timestamp_ms: latest.timestamp_ms,
+                            related_process_id: Some(latest.process_id),
+                            evidence: crate::models::Evidence {
+                                related_event_ids: vec![latest.event_id],
+                                reasoning_path: format!("Process {} attempted to establish persistence by writing to Startup Registry: {} -> {}", latest.process_id, key_path, value_name),
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        None
+    }
+}

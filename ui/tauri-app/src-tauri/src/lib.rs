@@ -1,6 +1,6 @@
 use engine_etw::EtwSession;
 use engine_detection::pipeline::DetectionPipeline;
-use engine_detection::rules::{LsassDumpRule, ReverseShellRule, RansomwareBehaviorRule};
+use engine_detection::rules::{LsassDumpRule, ReverseShellRule, RansomwareBehaviorRule, ProcessInjectionRule, RegistryPersistenceRule};
 use tauri::{Manager, Emitter};
 
 #[tauri::command]
@@ -24,6 +24,8 @@ fn start_engine(app_handle: tauri::AppHandle) {
             Box::new(LsassDumpRule),
             Box::new(ReverseShellRule),
             Box::new(RansomwareBehaviorRule),
+            Box::new(ProcessInjectionRule),
+            Box::new(RegistryPersistenceRule),
         ];
         let mut detection_engine = DetectionPipeline::new(rules);
 
@@ -108,11 +110,18 @@ pub fn run() {
     }
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            use tauri::Manager;
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             use tauri::menu::{Menu, MenuItem};
-            use tauri::tray::{TrayIconBuilder, TrayIconEvent};
+            use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 
             let show_i = MenuItem::with_id(app, "show", "Toggle Dashboard", true, None::<&str>)?;
             let disable_i = MenuItem::with_id(app, "disable", "Disable Protection", true, None::<&str>)?;
@@ -123,6 +132,7 @@ pub fn run() {
             let _tray = TrayIconBuilder::with_id("sentra-tray")
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
+                .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "quit" => {
                         println!("Quitting SentraEDR...");
@@ -145,7 +155,7 @@ pub fn run() {
                     _ => {}
                 })
                 .on_tray_icon_event(|tray, event| match event {
-                    TrayIconEvent::Click { .. } => {
+                    TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } => {
                         let app = tray.app_handle();
                         if let Some(window) = app.get_webview_window("main") {
                             if window.is_visible().unwrap_or(false) {

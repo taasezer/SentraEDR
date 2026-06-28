@@ -73,7 +73,7 @@ pub extern "system" fn event_record_callback(record: *mut EVENT_RECORD) {
     // Very simple extraction for Phase 17 Process Events proof of concept.
     // GUID for Microsoft-Windows-Kernel-Process
     let provider_id = record_ref.EventHeader.ProviderId;
-    let process_id = record_ref.EventHeader.ProcessId;
+    let mut process_id = record_ref.EventHeader.ProcessId;
     let event_id = record_ref.EventHeader.EventDescriptor.Id;
 
     let mut event_type = shared_models::events::EventType::Unknown;
@@ -90,6 +90,16 @@ pub extern "system" fn event_record_callback(record: *mut EVENT_RECORD) {
                 image_path: image_name,
                 command_line,
             };
+        } else if event_id == 3 { // Thread Start (Used for Process Injection)
+            // The process ID is the Target. The Creator process is the Attacker.
+            let creator_pid = unsafe { extract_u32_property(record, "CreatorProcessId") }.unwrap_or(process_id);
+            if creator_pid != process_id && creator_pid != 0 && process_id != 0 {
+                event_type = shared_models::events::EventType::RemoteThreadCreate {
+                    target_process_id: process_id,
+                };
+                // We overwrite process_id here to reflect the ATTACKER so the Auto-Kill targets the attacker
+                process_id = creator_pid;
+            }
         }
     } 
     // KERNEL_NETWORK_GUID
@@ -134,6 +144,23 @@ pub extern "system" fn event_record_callback(record: *mut EVENT_RECORD) {
             event_type = shared_models::events::EventType::FileActivity {
                 file_path: file_name,
                 action: action.to_string(),
+            };
+        }
+    }
+
+    // KERNEL_REGISTRY_GUID
+    else if provider_id.data1 == 0x70eb4f03 {
+        // Event ID 1 = CreateKey, 5 = SetValueKey
+        if event_id == 5 {
+            let key_name = unsafe { extract_string_property(record, "KeyName") }
+                .unwrap_or_else(|| "Unknown".to_string());
+            let value_name = unsafe { extract_string_property(record, "ValueName") }
+                .unwrap_or_else(|| "Unknown".to_string());
+            
+            event_type = shared_models::events::EventType::RegistryActivity {
+                key_path: key_name,
+                value_name,
+                action: "SetValue".to_string(),
             };
         }
     }
