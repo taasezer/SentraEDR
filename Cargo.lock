@@ -3186,6 +3186,7 @@ dependencies = [
 name = "sentra-ui"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "sentra-core",
  "sentra-ipc",
  "sentra-process",
@@ -3197,6 +3198,7 @@ dependencies = [
  "tauri-plugin-opener",
  "tauri-plugin-shell",
  "tokio",
+ "uuid",
 ]
 
 [[package]]

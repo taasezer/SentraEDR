@@ -7,6 +7,7 @@ import "./App.css";
 function App() {
   const [health, setHealth] = useState<any>(null);
   const [processes, setProcesses] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
 
   useEffect(() => {
     // Listen for IPC messages from the Rust backend
@@ -17,6 +18,8 @@ function App() {
           setHealth(msg.HealthResponse);
         } else if ("ProcessList" in msg) {
           setProcesses(msg.ProcessList);
+        } else if ("DetectionAlert" in msg) {
+          setAlerts(prev => [msg.DetectionAlert, ...prev].slice(0, 50));
         }
       }
     });
@@ -68,7 +71,7 @@ function App() {
             <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-6 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-2xl -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
               <p className="text-slate-400 text-sm mb-2 relative z-10">Blocked Threats</p>
-              <p className="text-3xl font-bold text-red-400 relative z-10">3</p>
+              <p className="text-3xl font-bold text-red-400 relative z-10">{alerts.length}</p>
             </div>
             <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-6 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
@@ -86,7 +89,7 @@ function App() {
             
             {/* Detection Timeline (Right col) */}
             <div className="col-span-1">
-              <DetectionTimeline />
+              <DetectionTimeline alerts={alerts} />
             </div>
           </div>
 
