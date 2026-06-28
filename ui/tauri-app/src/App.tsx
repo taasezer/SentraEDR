@@ -6,8 +6,8 @@ import './App.css';
 interface Alert {
   alert_id: string;
   rule_id: string;
-  severity: 'High' | 'Medium' | 'Low';
-  confidence: 'High' | 'Medium' | 'Low';
+  severity: number;
+  confidence: number;
   evidence: {
     reasoning_path: string;
     related_event_ids: string[];
@@ -98,7 +98,7 @@ function App() {
           <div className="stat-card">
             <div className="stat-title">High Severity</div>
             <div className="stat-value" style={{ color: 'var(--danger-color)' }}>
-              {alerts.filter(a => a.severity === 'High').length}
+              {alerts.filter(a => a.severity >= 80).length}
             </div>
           </div>
           <div className="stat-card">
@@ -139,14 +139,14 @@ function App() {
                   <div className="alert-metrics">
                     <div className="metric">
                       <span className="metric-label">Risk</span>
-                      <span className={`metric-value ${alert.severity.toLowerCase()}`}>
-                        {alert.severity}
+                      <span className={`metric-value risk-${alert.severity}`}>
+                        {alert.severity >= 80 ? 'High' : alert.severity >= 50 ? 'Medium' : 'Low'} ({alert.severity})
                       </span>
                     </div>
                     <div className="metric">
                       <span className="metric-label">Confidence</span>
-                      <span className={`metric-value ${alert.confidence.toLowerCase()}`}>
-                        {alert.confidence}
+                      <span className={`metric-value conf-${alert.confidence}`}>
+                        {alert.confidence}%
                       </span>
                     </div>
                   </div>

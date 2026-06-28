@@ -59,6 +59,32 @@ unsafe fn extract_u16_property(record: *mut EVENT_RECORD, property_name: &str) -
     if status == 0 { Some(value) } else { None }
 }
 
+unsafe fn extract_u64_property(record: *mut EVENT_RECORD, property_name: &str) -> Option<u64> {
+    let mut utf16_name = property_name.encode_utf16().chain(std::iter::once(0)).collect::<Vec<u16>>();
+    let mut desc = PROPERTY_DATA_DESCRIPTOR::default();
+    desc.PropertyName = utf16_name.as_mut_ptr() as u64;
+    desc.ArrayIndex = 0xFFFFFFFF;
+    let desc_slice = std::slice::from_ref(&desc);
+
+    let mut property_size: u32 = 0;
+    if TdhGetPropertySize(record, None, desc_slice, &mut property_size) != 0 {
+        return None;
+    }
+
+    if property_size == 4 {
+        let mut value: u32 = 0;
+        let status = TdhGetProperty(record, None, desc_slice, std::slice::from_raw_parts_mut(&mut value as *mut u32 as *mut u8, 4));
+        if status == 0 { return Some(value as u64); }
+    } else if property_size == 8 {
+        let mut value: u64 = 0;
+        let status = TdhGetProperty(record, None, desc_slice, std::slice::from_raw_parts_mut(&mut value as *mut u64 as *mut u8, 8));
+        if status == 0 { return Some(value); }
+    }
+    None
+}
+
+static FILE_MAP: OnceLock<std::sync::Mutex<std::collections::HashMap<u64, String>>> = OnceLock::new();
+
 /// Raw C-style callback for `ProcessTrace`.
 /// This function blocks the ETW OS Thread and parses every event synchronously,
 /// dispatching it to the crossbeam channel for Tokio to consume.
@@ -108,12 +134,11 @@ pub extern "system" fn event_record_callback(record: *mut EVENT_RECORD) {
             let daddr = unsafe { extract_u32_property(record, "daddr") }.unwrap_or(0);
             let dport = unsafe { extract_u16_property(record, "dport") }.unwrap_or(0);
             
-            // Convert u32 to IP string (simple format for demo)
             let ip = format!("{}.{}.{}.{}", (daddr & 0xFF), (daddr >> 8) & 0xFF, (daddr >> 16) & 0xFF, (daddr >> 24) & 0xFF);
             
             event_type = shared_models::events::EventType::NetworkConnection {
                 destination_ip: ip,
-                destination_port: dport.to_be(), // Ports are usually big-endian
+                destination_port: dport.to_be(),
                 protocol: "TCP".to_string(),
             };
         } else if event_id == 14 || event_id == 15 { // UDP Send/Receive
@@ -128,17 +153,72 @@ pub extern "system" fn event_record_callback(record: *mut EVENT_RECORD) {
             };
         }
     }
+    // MICROSOFT_WINDOWS_KERNEL_REGISTRY
+    else if provider_id.data1 == 0x70eb4f03 {
+        let key_name = unsafe { extract_string_property(record, "KeyName") }
+            .unwrap_or_else(|| "Unknown".to_string());
+        let value_name = unsafe { extract_string_property(record, "ValueName") }
+            .unwrap_or_else(|| "Unknown".to_string());
+        
+        let action = match event_id {
+            1 => "CreateKey",
+            2 => "SetValue",
+            3 => "DeleteKey",
+            4 => "DeleteValue",
+            _ => "Unknown",
+        };
+
+        event_type = shared_models::events::EventType::RegistryActivity {
+            key_path: key_name,
+            value_name,
+            action: action.to_string(),
+        };
+    }
     // KERNEL_FILE_GUID
     else if provider_id.data1 == 0xedd08927 {
-        let file_name = unsafe { extract_string_property(record, "FileName") }
-            .unwrap_or_else(|| "Unknown".to_string());
+        let map_mutex = FILE_MAP.get_or_init(|| std::sync::Mutex::new(std::collections::HashMap::new()));
+        
+        let file_object = unsafe { extract_u64_property(record, "FileObject") }.unwrap_or(0);
+        let mut file_name = "Unknown".to_string();
+
+        if let Ok(mut map) = map_mutex.lock() {
+            if event_id == 12 { // Create
+                if let Some(name) = unsafe { extract_string_property(record, "FileName") } {
+                    file_name = name.clone();
+                    if file_object != 0 {
+                        map.insert(file_object, name);
+                    }
+                }
+            } else if event_id == 19 { // Rename
+                if let Some(new_name) = unsafe { extract_string_property(record, "FileName") } {
+                    file_name = new_name.clone();
+                    if file_object != 0 {
+                        map.insert(file_object, new_name);
+                    }
+                }
+            } else {
+                // Read, Write, Close, etc.
+                if file_object != 0 {
+                    if let Some(cached_name) = map.get(&file_object) {
+                        file_name = cached_name.clone();
+                    }
+                }
+                if event_id == 14 { // Close (Cleanup from map)
+                    if file_object != 0 {
+                        map.remove(&file_object);
+                    }
+                }
+            }
+        }
         
         let action = match event_id {
             12 => "Create",
             14 => "Close",
             15 => "Read",
             16 => "Write",
-            64 => "Create",
+            17 => "SetInformation",
+            18 => "Delete",
+            19 => "Rename",
             _ => "Unknown",
         };
 

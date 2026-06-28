@@ -46,12 +46,12 @@ fn start_engine(app_handle: tauri::AppHandle) {
             for alert in alerts {
                 println!("[ALERT] {}", alert.rule_id);
                 
-                use tauri_plugin_notification::NotificationExt;
-                let _ = app_handle.notification()
-                    .builder()
-                    .title(format!("SentraEDR: {}", alert.rule_id))
-                    .body(format!("Threat detected! Severity: {}", alert.severity))
-                    .show();
+                // use tauri_plugin_notification::NotificationExt;
+                // let _ = app_handle.notification()
+                //     .builder()
+                //     .title(format!("SentraEDR: {}", alert.rule_id))
+                //     .body(format!("Threat detected! Severity: {}", alert.severity))
+                //     .show();
 
                 if let Ok(alert_json) = serde_json::to_string(&alert) {
                     let _ = app_handle.emit("edr-alert", alert_json);
