@@ -4,17 +4,8 @@ use std::path::Path;
 use std::process::Command;
 
 fn main() {
-    // 1. Build sentra-service (Release mode)
-    println!("cargo:warning=Building sentra-service sidecar...");
-    let status = Command::new("cargo")
-        .args(&["build", "--release", "--bin", "sentra-service"])
-        .current_dir("../../../") // Root workspace dir
-        .status()
-        .expect("Failed to execute cargo build for sentra-service");
-
-    if !status.success() {
-        panic!("Failed to build sentra-service");
-    }
+    // 1. The sidecar (sentra-service) is now compiled via beforeBuildCommand in tauri.conf.json 
+    // to avoid Cargo lock deadlocks. We just copy the resulting executable here.
 
     // 2. Determine target triple to copy the sidecar with the correct suffix
     let target = env::var("TARGET").unwrap_or_else(|_| "x86_64-pc-windows-msvc".to_string());
