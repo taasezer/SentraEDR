@@ -55,6 +55,8 @@ pub enum TelemetryAction {
     NetworkConnectionObserved,
     MemoryEventObserved,
     ComponentHealthChanged,
+    FileCreated,
+    FileModified,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

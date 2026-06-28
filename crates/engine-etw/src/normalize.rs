@@ -8,6 +8,7 @@ pub fn normalize_etw_record(record: EtwRecord) -> NormalizedTelemetryEvent {
     match record {
         EtwRecord::Process(p) => normalize_process_record(p),
         EtwRecord::Network(n) => normalize_network_record(n),
+        EtwRecord::File(f) => normalize_file_record(f),
     }
 }
 
@@ -71,6 +72,34 @@ pub fn normalize_network_record(record: EtwNetworkRecord) -> NormalizedTelemetry
     metadata = metadata.insert("network.direction", direction);
     metadata = metadata.insert("network.protocol", "tcp"); // Simplification for MVP
 
+    event.metadata = metadata;
+    event
+}
+
+pub fn normalize_file_record(record: crate::record::EtwFileRecord) -> NormalizedTelemetryEvent {
+    use crate::record::EtwFileEventKind;
+
+    let (priority, action) = match record.event_kind {
+        EtwFileEventKind::Create => (EventPriority::High, TelemetryAction::FileCreated),
+        EtwFileEventKind::Write => (EventPriority::Medium, TelemetryAction::FileModified),
+        EtwFileEventKind::Rename => (EventPriority::Medium, TelemetryAction::FileModified),
+    };
+
+    let process = ProcessIdentity {
+        process_id: record.process_id,
+        parent_process_id: None,
+        image_path: None,
+        command_line: None,
+        user_sid: None,
+    };
+
+    let mut event =
+        NormalizedTelemetryEvent::new(TelemetrySource::Etw, priority, action, record.timestamp)
+            .with_process(process)
+            .with_confidence_hint(100);
+            
+    let mut metadata = TelemetryMetadata::empty().insert("engine", "engine-etw");
+    metadata = metadata.insert("file.path", record.file_path);
     event.metadata = metadata;
     event
 }

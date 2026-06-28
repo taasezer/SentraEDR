@@ -155,6 +155,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "engine-file"
+version = "0.1.0"
+dependencies = [
+ "shared-models",
+]
+
+[[package]]
 name = "engine-memory"
 version = "0.1.0"
 dependencies = [
@@ -590,6 +597,7 @@ dependencies = [
  "crossterm",
  "engine-detection",
  "engine-etw",
+ "engine-file",
  "engine-memory",
  "engine-network",
  "engine-persistence",
@@ -606,6 +614,7 @@ dependencies = [
  "toml",
  "tracing",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]

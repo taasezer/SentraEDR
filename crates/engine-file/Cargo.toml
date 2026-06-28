@@ -1,0 +1,11 @@
+[package]
+name = "engine-file"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
+
+[dependencies]
+shared-models = { version = "0.1.0", path = "../shared-models" }

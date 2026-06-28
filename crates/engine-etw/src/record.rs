@@ -90,8 +90,35 @@ impl EtwNetworkRecord {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EtwFileEventKind {
+    Create,
+    Write,
+    Rename,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EtwFileRecord {
+    pub event_kind: EtwFileEventKind,
+    pub timestamp: Timestamp,
+    pub process_id: u32,
+    pub file_path: String,
+}
+
+impl EtwFileRecord {
+    pub fn new(event_kind: EtwFileEventKind, timestamp: Timestamp, process_id: u32, file_path: impl Into<String>) -> Self {
+        Self {
+            event_kind,
+            timestamp,
+            process_id,
+            file_path: file_path.into(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EtwRecord {
     Process(EtwProcessRecord),
     Network(EtwNetworkRecord),
+    File(EtwFileRecord),
 }

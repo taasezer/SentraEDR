@@ -35,9 +35,10 @@ async fn main() {
     let state_clone = Arc::clone(&shared_state);
 
     tokio::spawn(async move {
+        let file_analyzer = engine_file::FileAnalyzer::new();
         match etw_source_result {
             Ok(mut live_source) => {
-                info!("Successfully attached to real Windows ETW Kernel-Process provider.");
+                info!("Successfully attached to real Windows ETW Kernel-Process/Network/File providers.");
                 loop {
                     // This blocks the thread. In a robust setup we'd use a dedicated OS thread.
                     // But we use a channel receiver so try_recv is fast.
@@ -50,7 +51,7 @@ async fn main() {
 
                             // Let's pretend every new process start is a behavioral signal
                             // to make the demo lively
-                            use engine_etw::{EtwProcessEventKind, EtwNetworkEventKind, EtwRecord};
+                            use engine_etw::{EtwProcessEventKind, EtwNetworkEventKind, EtwFileEventKind, EtwRecord};
                             match record {
                                 EtwRecord::Process(p) => {
                                     if p.event_kind == EtwProcessEventKind::Start {
@@ -68,6 +69,71 @@ async fn main() {
                                             title: format!("TCP Connect to {}:{}", n.remote_ip, n.remote_port),
                                             timestamp: n.timestamp,
                                         });
+                                    }
+                                }
+                                EtwRecord::File(f) => {
+                                    if f.event_kind == EtwFileEventKind::Create || f.event_kind == EtwFileEventKind::Rename {
+                                        if let Some(signal) = file_analyzer.analyze_file_io(&f.file_path, f.process_id, f.timestamp.clone()) {
+                                            dash.telemetry.behavioral_signals += 1;
+                                            
+                                            // Create Alert
+                                            use shared_models::{Alert, Finding, RiskLevel, RemediationAction, process::{ProcessIdentity, ImagePath}};
+                                            use engine_remediation::{executor::RemediationExecutor, RemediationPlan, RemediationPlanStepKind, RemediationPlanStep};
+                                            
+                                            let mut finding = Finding::new(signal.timestamp.clone(), RiskLevel::Critical, 100);
+                                            finding.process = Some(ProcessIdentity {
+                                                process_id: signal.pid,
+                                                parent_process_id: None,
+                                                image_path: Some(ImagePath::new(signal.file_path.clone())),
+                                                command_line: None,
+                                                user_sid: None,
+                                            });
+                                            let alert = Alert::observe_only(finding, "Ransomware detected");
+
+                                            use sentra_ui::{TimelineEntry, TimelineKind};
+                                            dash.timeline.push(TimelineEntry {
+                                                kind: TimelineKind::AlertObserved,
+                                                title: format!("RANSOMWARE DETECTED! PID {} created a {} file.", signal.pid, signal.extension),
+                                                timestamp: signal.timestamp.clone(),
+                                            });
+
+                                            // Execute Kill Switch and Quarantine
+                                            let plan = RemediationPlan {
+                                                alert_id: alert.alert_id.clone(),
+                                                steps: vec![
+                                                    RemediationPlanStep {
+                                                        kind: RemediationPlanStepKind::KillProcess,
+                                                        action: RemediationAction::KillProcess,
+                                                        description: "Kill Ransomware".into(),
+                                                    },
+                                                    RemediationPlanStep {
+                                                        kind: RemediationPlanStepKind::QuarantineFile,
+                                                        action: RemediationAction::QuarantineFile,
+                                                        description: "Quarantine Ransomware File".into(),
+                                                    }
+                                                ],
+                                                created_at: signal.timestamp.clone(),
+                                                plan_id: uuid::Uuid::new_v4(),
+                                                mode: shared_models::RemediationMode::ApprovalRequired,
+                                            };
+
+                                            match RemediationExecutor::execute_plan(&plan, &alert) {
+                                                Ok(_) => {
+                                                    dash.timeline.push(TimelineEntry {
+                                                        kind: TimelineKind::AlertResolved,
+                                                        title: format!("SUCCESS: Killed PID {} and quarantined {}.", signal.pid, signal.file_path),
+                                                        timestamp: Timestamp::now(),
+                                                    });
+                                                }
+                                                Err(e) => {
+                                                    dash.timeline.push(TimelineEntry {
+                                                        kind: TimelineKind::AlertObserved,
+                                                        title: format!("FAILED to kill PID {}: {:?}", signal.pid, e),
+                                                        timestamp: Timestamp::now(),
+                                                    });
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }

@@ -12,6 +12,6 @@ pub use live_source::LiveEtwSource;
 pub use metrics::{EtwIngestionReport, EtwIngestionStats};
 pub use normalize::{normalize_etw_record, normalize_process_record};
 pub use record::{
-    EtwNetworkEventKind, EtwNetworkRecord, EtwProcessEventKind, EtwProcessRecord, EtwRecord,
+    EtwNetworkEventKind, EtwNetworkRecord, EtwProcessEventKind, EtwProcessRecord, EtwRecord, EtwFileEventKind, EtwFileRecord,
 };
 pub use source::{EtwEventSource, SyntheticEtwSource};
