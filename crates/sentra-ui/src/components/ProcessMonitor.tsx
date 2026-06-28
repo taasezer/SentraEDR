@@ -1,7 +1,7 @@
 export function ProcessMonitor({ processes }: { processes: any[] }) {
-  // Use real data if available, otherwise fallback to empty state
+  // Sort by highest PID first (newest processes) so the dashboard feels dynamic and live
   const displayProcesses = processes && processes.length > 0 
-    ? processes.slice(0, 50) // Show top 50
+    ? [...processes].sort((a, b) => b.pid - a.pid).slice(0, 50) 
     : [];
 
   return (
