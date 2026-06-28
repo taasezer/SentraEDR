@@ -130,22 +130,22 @@ pub extern "system" fn event_record_callback(record: *mut EVENT_RECORD) {
     }
     // KERNEL_FILE_GUID
     else if provider_id.data1 == 0xedd08927 {
-        if event_id == 64 || event_id == 14 || event_id == 15 { // Create/Write/Rename
-            let file_name = unsafe { extract_string_property(record, "FileName") }
-                .unwrap_or_else(|| "Unknown".to_string());
-            
-            let action = match event_id {
-                64 => "Create",
-                14 => "Write",
-                15 => "Rename",
-                _ => "Unknown"
-            };
+        let file_name = unsafe { extract_string_property(record, "FileName") }
+            .unwrap_or_else(|| "Unknown".to_string());
+        
+        let action = match event_id {
+            12 => "Create",
+            14 => "Close",
+            15 => "Read",
+            16 => "Write",
+            64 => "Create",
+            _ => "Unknown",
+        };
 
-            event_type = shared_models::events::EventType::FileActivity {
-                file_path: file_name,
-                action: action.to_string(),
-            };
-        }
+        event_type = shared_models::events::EventType::FileActivity {
+            file_path: file_name,
+            action: action.to_string(),
+        };
     }
 
     // KERNEL_REGISTRY_GUID

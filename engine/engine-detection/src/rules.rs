@@ -112,26 +112,21 @@ impl Rule for RansomwareBehaviorRule {
             if let EventType::FileActivity { file_path, action } = &recent_event.event_type {
                 
                 let lower_path = file_path.to_lowercase();
-                if action == "Write" || action == "Rename" {
-                    // 1. Direct Extension Check (Hard Match)
-                    if lower_path.ends_with(".encrypted") || lower_path.ends_with(".lock") || lower_path.ends_with(".wncry") {
-                        return Some(Alert {
-                            alert_id: uuid::Uuid::new_v4(),
-                            rule_id: self.rule_id().to_string(),
-                            timestamp_ms: recent_event.timestamp_ms,
-                            severity: 100, // Critical
-                            confidence: 100, 
-                            related_process_id: Some(recent_event.process_id),
-                            evidence: crate::models::Evidence {
-                                related_event_ids: vec![recent_event.event_id],
-                                reasoning_path: format!("Ransomware extension detected during file write/rename: {}", file_path),
-                            }
-                        });
-                    }
-
-                    // We removed the heuristic (50 files in 5 seconds) because standard Windows processes
-                    // (like npm, compilers, browsers) easily write hundreds of files per second, 
-                    // causing massive false positives. We now only rely on the hard extension match above.
+                
+                // 1. Direct Extension Check (Hard Match)
+                if lower_path.ends_with(".encrypted") || lower_path.ends_with(".lock") || lower_path.ends_with(".wncry") {
+                    return Some(Alert {
+                        alert_id: uuid::Uuid::new_v4(),
+                        rule_id: self.rule_id().to_string(),
+                        timestamp_ms: recent_event.timestamp_ms,
+                        severity: 100, // Critical
+                        confidence: 100, 
+                        related_process_id: Some(recent_event.process_id),
+                        evidence: crate::models::Evidence {
+                            related_event_ids: vec![recent_event.event_id],
+                            reasoning_path: format!("Ransomware extension detected during file {}: {}", action, file_path),
+                        }
+                    });
                 }
             }
         }
