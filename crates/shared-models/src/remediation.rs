@@ -16,6 +16,7 @@ pub enum RemediationAction {
     SuspendProcess,
     IsolateNetwork,
     QuarantineFile,
+    DeleteFile,
     BackupRegistryValue,
     RestoreRegistryValue,
 }

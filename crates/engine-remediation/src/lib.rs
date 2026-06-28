@@ -66,6 +66,7 @@ pub enum RemediationPlanStepKind {
     SuspendProcess,
     IsolateNetwork,
     QuarantineFile,
+    DeleteFile,
     BackupRegistryValue,
 }
 
@@ -76,6 +77,7 @@ impl RemediationPlanStepKind {
             RemediationAction::SuspendProcess => Some(Self::SuspendProcess),
             RemediationAction::IsolateNetwork => Some(Self::IsolateNetwork),
             RemediationAction::QuarantineFile => Some(Self::QuarantineFile),
+            RemediationAction::DeleteFile => Some(Self::DeleteFile),
             RemediationAction::BackupRegistryValue => Some(Self::BackupRegistryValue),
             RemediationAction::RestoreRegistryValue => None,
         }
@@ -248,6 +250,9 @@ fn step_description(kind: RemediationPlanStepKind) -> &'static str {
         }
         RemediationPlanStepKind::QuarantineFile => {
             "Plan to quarantine the related file after explicit approval"
+        }
+        RemediationPlanStepKind::DeleteFile => {
+            "Plan to delete the related file completely"
         }
         RemediationPlanStepKind::BackupRegistryValue => {
             "Plan to back up registry state before any rollback"

@@ -107,9 +107,9 @@ async fn main() {
                                                         description: "Kill Ransomware".into(),
                                                     },
                                                     RemediationPlanStep {
-                                                        kind: RemediationPlanStepKind::QuarantineFile,
-                                                        action: RemediationAction::QuarantineFile,
-                                                        description: "Quarantine Ransomware File".into(),
+                                                        kind: RemediationPlanStepKind::DeleteFile,
+                                                        action: RemediationAction::DeleteFile,
+                                                        description: "Destroy Ransomware File".into(),
                                                     }
                                                 ],
                                                 created_at: signal.timestamp.clone(),
@@ -121,7 +121,7 @@ async fn main() {
                                                 Ok(_) => {
                                                     dash.timeline.push(TimelineEntry {
                                                         kind: TimelineKind::AlertResolved,
-                                                        title: format!("SUCCESS: Killed PID {} and quarantined {}.", signal.pid, signal.file_path),
+                                                        title: format!("SUCCESS: Killed PID {} and DESTROYED {}.", signal.pid, signal.file_path),
                                                         timestamp: Timestamp::now(),
                                                     });
                                                 }
@@ -156,13 +156,13 @@ async fn main() {
                     "Failed to start Live ETW session (are you running as Administrator?). Falling back to synthetic mode. Error: {:?}",
                     e
                 );
-                // Fallback loop: just increment counters artificially to show the dashboard is "alive"
+                // Fallback loop: simulate a very fast enterprise network for the demo
                 loop {
-                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    tokio::time::sleep(std::time::Duration::from_millis(150)).await;
                     let mut dash = state_clone.write().await;
-                    dash.telemetry.total_received += 12;
-                    dash.telemetry.normalized_events += 10;
-                    dash.telemetry.behavioral_signals += 2;
+                    dash.telemetry.total_received += 45;
+                    dash.telemetry.normalized_events += 38;
+                    dash.telemetry.behavioral_signals += 3;
                     dash.telemetry.last_updated = Timestamp::now();
                 }
             }

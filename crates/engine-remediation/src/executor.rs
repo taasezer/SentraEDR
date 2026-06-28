@@ -49,6 +49,13 @@ impl RemediationExecutor {
                         return Err(ExecutorError::MissingImagePath);
                     }
                 }
+                RemediationPlanStepKind::DeleteFile => {
+                    if let Some(path) = &process.image_path {
+                        Self::delete_file(path.as_str())?;
+                    } else {
+                        return Err(ExecutorError::MissingImagePath);
+                    }
+                }
                 _ => {
                     // Ignore other unimplemented actions for MVP
                 }
@@ -90,6 +97,20 @@ impl RemediationExecutor {
         
         let quarantine_path = format!("{}.quarantined", path);
         if let Err(e) = std::fs::rename(original_path, &quarantine_path) {
+            return Err(ExecutorError::IoError(e.to_string()));
+        }
+        
+        Ok(())
+    }
+
+    fn delete_file(path: &str) -> Result<(), ExecutorError> {
+        let original_path = std::path::Path::new(path);
+        if !original_path.exists() {
+            // If it doesn't exist anymore, nothing to delete
+            return Ok(());
+        }
+        
+        if let Err(e) = std::fs::remove_file(original_path) {
             return Err(ExecutorError::IoError(e.to_string()));
         }
         
