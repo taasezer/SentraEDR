@@ -114,7 +114,7 @@ impl Rule for RansomwareBehaviorRule {
                 if action == "Write" || action == "Rename" {
                     let lower_path = file_path.to_lowercase();
                     
-                    // 1. Direct Extension Check (Hard Match against a comprehensive database)
+                    
                     let ransomware_exts = [
                         ".encrypted", ".wncry", ".crypt", ".cerber",
                         ".globe", ".zepto", ".osiris", ".thor", ".aesir", ".dharma",
