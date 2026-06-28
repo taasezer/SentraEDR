@@ -1,9 +1,8 @@
 use sentra_core::SystemHealth;
-use sentra_ipc::IpcClient;
+use sentra_ipc::IpcMessage;
 use tauri::{Manager, Emitter};
-use tauri_plugin_shell::ShellExt;
-use tauri_plugin_shell::process::CommandEvent;
 use tokio::runtime::Runtime;
+use sysinfo::System;
 
 #[tauri::command]
 fn get_health_status() -> SystemHealth {
@@ -22,54 +21,41 @@ fn get_health_status() -> SystemHealth {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             let app_handle = app.handle().clone();
             
-            // 1. Spawn the background backend service (Sidecar)
-            let sidecar_command = app.shell().sidecar("sentra-service").unwrap();
-            let (mut rx, _child) = sidecar_command.spawn().expect("Failed to spawn sentra-service sidecar");
-
-            // Optional: log sidecar output for debugging
-            tauri::async_runtime::spawn(async move {
-                while let Some(event) = rx.recv().await {
-                    if let CommandEvent::Stdout(line) = event {
-                        println!("Backend: {}", String::from_utf8_lossy(&line));
-                    } else if let CommandEvent::Stderr(line) = event {
-                        eprintln!("Backend Error: {}", String::from_utf8_lossy(&line));
-                    }
-                }
-            });
-
-            // 2. Spawn a background thread for the IPC Client
+            // Spawn a background thread for the Monolithic Orchestrator Engine
             std::thread::spawn(move || {
                 let rt = Runtime::new().unwrap();
                 rt.block_on(async {
+                    println!("SentraEDR Monolithic Engine started.");
+                    let mut sys = System::new_all();
+                    let start_time = std::time::Instant::now();
+                    
                     loop {
-                        // Try to connect to the SentraEDR IPC Pipe
-                        let mut client = match IpcClient::connect().await {
-                            Ok(c) => {
-                                println!("Successfully connected to SentraEDR IPC pipe");
-                                c
-                            },
-                            Err(_) => {
-                                // Silently wait and retry if the backend service is not running yet
-                                tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-                                continue;
-                            }
-                        };
+                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                        
+                        sys.refresh_all();
+                        let cpu_usage = sys.global_cpu_info().cpu_usage();
+                        let memory_usage_mb = (sys.used_memory() as f64 / 1024.0 / 1024.0) as f32;
+                        let uptime = start_time.elapsed().as_secs();
 
-                        loop {
-                            match client.receive_message().await {
-                                Ok(msg) => {
-                                    // Emit to frontend
-                                    let _ = app_handle.emit("ipc-message", msg);
-                                }
-                                Err(e) => {
-                                    eprintln!("IPC connection lost: {}. Reconnecting...", e);
-                                    break; // Break inner loop to trigger reconnect
-                                }
-                            }
+                        let health_msg = IpcMessage::HealthResponse(SystemHealth {
+                            cpu_usage,
+                            memory_usage_mb,
+                            events_per_second: 0.0, // Will be updated by ETW
+                            channel_fill_percent: 0.0,
+                            dropped_events: 0,
+                            uptime_seconds: uptime,
+                        });
+                        
+                        // Directly emit to frontend without any IPC pipes!
+                        let _ = app_handle.emit("ipc-message", health_msg);
+
+                        // Enumerate and emit process list
+                        if let Ok(processes) = sentra_process::enumerate::enumerate_processes() {
+                            let proc_msg = IpcMessage::ProcessList(processes);
+                            let _ = app_handle.emit("ipc-message", proc_msg);
                         }
                     }
                 });

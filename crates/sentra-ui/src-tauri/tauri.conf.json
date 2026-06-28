@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "cargo build --release --manifest-path ../../Cargo.toml --bin sentra-service && npm run build",
+    "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
   "app": {
@@ -24,7 +24,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "externalBin": ["bin/sentra-service"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
