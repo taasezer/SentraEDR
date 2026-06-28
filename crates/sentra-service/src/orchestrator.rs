@@ -74,11 +74,19 @@ impl SentraOrchestrator {
                     }
                 }
                 
-                // recreate the server instance for next client (named pipes single instance)
-                ipc_server = match sentra_ipc::IpcServer::new() {
-                    Ok(s) => s,
-                    Err(_) => break,
-                };
+                // Recreate the server instance for the next client
+                loop {
+                    match sentra_ipc::IpcServer::new() {
+                        Ok(s) => {
+                            ipc_server = s;
+                            break;
+                        }
+                        Err(e) => {
+                            tracing::warn!("Failed to recreate IPC pipe, retrying... ({})", e);
+                            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                        }
+                    }
+                }
             }
         });
 
