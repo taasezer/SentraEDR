@@ -10,3 +10,4 @@ pub mod persistence_dry_run;
 pub mod process_dry_run;
 pub mod remediation_dry_run;
 pub mod snapshot_builder;
+pub mod file_watcher;

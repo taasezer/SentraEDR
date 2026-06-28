@@ -5,6 +5,7 @@ use sentra_agent::snapshot_builder::build_demo_snapshot;
 use sentra_ui::{DashboardState, LiveTelemetrySnapshot, run_tui_loop};
 use shared_models::Timestamp;
 use std::sync::Arc;
+use std::path::PathBuf;
 use tokio::sync::RwLock;
 use tracing::{error, info, warn};
 
@@ -156,14 +157,79 @@ async fn main() {
                     "Failed to start Live ETW session (are you running as Administrator?). Falling back to synthetic mode. Error: {:?}",
                     e
                 );
-                // Fallback loop: simulate a very fast enterprise network for the demo
+                // Fallback loop: synthetic ETW + File System Watcher
+                let desktop_path = dirs::desktop_dir().unwrap_or_else(|| PathBuf::from("C:\\Users\\user\\Desktop"));
+                let mut file_rx = sentra_agent::file_watcher::start_file_watcher(desktop_path);
+                
                 loop {
-                    tokio::time::sleep(std::time::Duration::from_millis(150)).await;
-                    let mut dash = state_clone.write().await;
-                    dash.telemetry.total_received += 45;
-                    dash.telemetry.normalized_events += 38;
-                    dash.telemetry.behavioral_signals += 3;
-                    dash.telemetry.last_updated = Timestamp::now();
+                    tokio::select! {
+                        _ = tokio::time::sleep(std::time::Duration::from_millis(150)) => {
+                            let mut dash = state_clone.write().await;
+                            dash.telemetry.total_received += 45;
+                            dash.telemetry.normalized_events += 38;
+                            dash.telemetry.behavioral_signals += 3;
+                            dash.telemetry.last_updated = Timestamp::now();
+                        }
+                        Some(path) = file_rx.recv() => {
+                            // File watcher picked something up
+                            let path_str = path.to_string_lossy().to_string();
+                            if let Some(signal) = file_analyzer.analyze_file_io(&path_str, 0, Timestamp::now()) {
+                                let mut dash = state_clone.write().await;
+                                dash.telemetry.behavioral_signals += 1;
+                                
+                                use shared_models::{Alert, Finding, RiskLevel, RemediationAction, process::{ProcessIdentity, ImagePath}};
+                                use engine_remediation::{executor::RemediationExecutor, RemediationPlan, RemediationPlanStepKind, RemediationPlanStep};
+                                
+                                let mut finding = Finding::new(signal.timestamp.clone(), RiskLevel::Critical, 100);
+                                finding.process = Some(ProcessIdentity {
+                                    process_id: signal.pid, // 0 for synthetic
+                                    parent_process_id: None,
+                                    image_path: Some(ImagePath::new(signal.file_path.clone())),
+                                    command_line: None,
+                                    user_sid: None,
+                                });
+                                let alert = Alert::observe_only(finding, "Ransomware detected by File Watcher");
+
+                                use sentra_ui::{TimelineEntry, TimelineKind};
+                                dash.timeline.push(TimelineEntry {
+                                    kind: TimelineKind::AlertObserved,
+                                    title: format!("RANSOMWARE DETECTED! Created: {}", signal.extension),
+                                    timestamp: signal.timestamp.clone(),
+                                });
+
+                                let plan = RemediationPlan {
+                                    alert_id: alert.alert_id.clone(),
+                                    steps: vec![
+                                        RemediationPlanStep {
+                                            kind: RemediationPlanStepKind::DeleteFile,
+                                            action: RemediationAction::DeleteFile,
+                                            description: "Destroy Ransomware File".into(),
+                                        }
+                                    ],
+                                    created_at: signal.timestamp.clone(),
+                                    plan_id: uuid::Uuid::new_v4(),
+                                    mode: shared_models::RemediationMode::ApprovalRequired,
+                                };
+
+                                match RemediationExecutor::execute_plan(&plan, &alert) {
+                                    Ok(_) => {
+                                        dash.timeline.push(TimelineEntry {
+                                            kind: TimelineKind::AlertResolved,
+                                            title: format!("SUCCESS: DESTROYED ransomware file: {}.", signal.file_path),
+                                            timestamp: Timestamp::now(),
+                                        });
+                                    }
+                                    Err(e) => {
+                                        dash.timeline.push(TimelineEntry {
+                                            kind: TimelineKind::AlertObserved,
+                                            title: format!("FAILED to destroy file: {:?}", e),
+                                            timestamp: Timestamp::now(),
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

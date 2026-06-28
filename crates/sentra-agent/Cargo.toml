@@ -28,6 +28,8 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 engine-file = { version = "0.1.0", path = "../engine-file" }
 uuid = { workspace = true, features = ["v4"] }
+notify = "8.2.0"
+dirs = "6.0.0"
 
 [dev-dependencies]
 tempfile.workspace = true
