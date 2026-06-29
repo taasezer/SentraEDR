@@ -239,18 +239,28 @@ pub async fn run_tui_loop(state: SharedDashboardState) -> io::Result<()> {
                             use crate::{TimelineEntry, TimelineKind};
                             use shared_models::Timestamp;
 
-                            if let Ok(regions) = MemoryScanner::scan_process(pid) {
-                                let mut dash = state.write().await;
-                                if regions.is_empty() {
-                                    dash.timeline.push(TimelineEntry {
-                                        kind: TimelineKind::TelemetryUpdated,
-                                        title: format!("MEMORY SCAN: PID {} is clean.", pid),
-                                        timestamp: Timestamp::now(),
-                                    });
-                                } else {
+                            match MemoryScanner::scan_process(pid) {
+                                Ok(regions) => {
+                                    let mut dash = state.write().await;
+                                    if regions.is_empty() {
+                                        dash.timeline.push(TimelineEntry {
+                                            kind: TimelineKind::TelemetryUpdated,
+                                            title: format!("MEMORY SCAN: PID {} is clean.", pid),
+                                            timestamp: Timestamp::now(),
+                                        });
+                                    } else {
+                                        dash.timeline.push(TimelineEntry {
+                                            kind: TimelineKind::AlertObserved,
+                                            title: format!("MEMORY SCAN: PID {} has {} suspicious unbacked regions!", pid, regions.len()),
+                                            timestamp: Timestamp::now(),
+                                        });
+                                    }
+                                }
+                                Err(e) => {
+                                    let mut dash = state.write().await;
                                     dash.timeline.push(TimelineEntry {
                                         kind: TimelineKind::AlertObserved,
-                                        title: format!("MEMORY SCAN: PID {} has {} suspicious unbacked regions!", pid, regions.len()),
+                                        title: format!("MEMORY SCAN FAILED: {:?}", e),
                                         timestamp: Timestamp::now(),
                                     });
                                 }
